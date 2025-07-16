@@ -1,0 +1,7 @@
+﻿services:
+  ecs-logistics:
+    image: ecs-logistics
+    build:
+      context: .
+      dockerfile: Dockerfile
+

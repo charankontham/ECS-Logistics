@@ -1,0 +1,21 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECS-Logistics", "ECS-Logistics.csproj", "{84C615CF-E11E-4072-96DF-5727E346BA38}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F4B6AD2A-F492-4B55-B632-EBC009BAC3BD}"
+	ProjectSection(SolutionItems) = preProject
+		compose.yaml = compose.yaml
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{84C615CF-E11E-4072-96DF-5727E346BA38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84C615CF-E11E-4072-96DF-5727E346BA38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84C615CF-E11E-4072-96DF-5727E346BA38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84C615CF-E11E-4072-96DF-5727E346BA38}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
