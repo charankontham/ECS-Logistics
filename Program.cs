@@ -1,4 +1,7 @@
 using ECS_Logistics.Data;
+using ECS_Logistics.Mappings;
+using ECS_Logistics.Repositories;
+using ECS_Logistics.Services;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
 
@@ -16,6 +19,11 @@ builder.Services.AddDbContext<MySqlDbContext>(options =>
 var mongoConnection = builder.Configuration.GetConnectionString("MongoDB");
 builder.Services.AddSingleton<IMongoClient>(new MongoClient(mongoConnection));
 builder.Services.AddSingleton<MongoDbContext>();
+
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+
+builder.Services.AddScoped<IDeliveryAgentRepository, DeliveryAgentRepository>();
+builder.Services.AddScoped<IDeliveryAgentService, DeliveryAgentService>();
 
 var app = builder.Build();
 

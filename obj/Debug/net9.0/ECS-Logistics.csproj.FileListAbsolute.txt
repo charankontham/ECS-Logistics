@@ -98,3 +98,10 @@
 /Users/charan/Documents/dotnet-apps/ECS-Logistics/obj/Debug/net9.0/ECS-Logistics.pdb
 /Users/charan/Documents/dotnet-apps/ECS-Logistics/obj/Debug/net9.0/ECS-Logistics.genruntimeconfig.cache
 /Users/charan/Documents/dotnet-apps/ECS-Logistics/obj/Debug/net9.0/ref/ECS-Logistics.dll
+/Users/charan/Documents/dotnet-apps/ECS-Logistics/bin/Debug/net9.0/DnsClient.dll
+/Users/charan/Documents/dotnet-apps/ECS-Logistics/bin/Debug/net9.0/MongoDB.Bson.dll
+/Users/charan/Documents/dotnet-apps/ECS-Logistics/bin/Debug/net9.0/MongoDB.Driver.dll
+/Users/charan/Documents/dotnet-apps/ECS-Logistics/bin/Debug/net9.0/SharpCompress.dll
+/Users/charan/Documents/dotnet-apps/ECS-Logistics/bin/Debug/net9.0/Snappier.dll
+/Users/charan/Documents/dotnet-apps/ECS-Logistics/bin/Debug/net9.0/ZstdSharp.dll
+/Users/charan/Documents/dotnet-apps/ECS-Logistics/obj/Debug/net9.0/ECS-Logistics.sourcelink.json
