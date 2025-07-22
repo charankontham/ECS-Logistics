@@ -1,15 +1,20 @@
 using ECS_Logistics.Data;
 using ECS_Logistics.Filters;
 using ECS_Logistics.Models;
+using ECS_Logistics.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECS_Logistics.Repositories;
 
 public class DeliveryAgentRepository(MySqlDbContext context) : IDeliveryAgentRepository
 {
-    public async Task<IEnumerable<DeliveryAgent>> GetAllAsync(DeliveryAgentFilters filters)
+    public async Task<IEnumerable<DeliveryAgent>> GetAllAsync(DeliveryAgentFilters? filters)
     {
         var query = context.DeliveryAgents.AsQueryable();
+        if (filters == null)
+        {
+            return await query.ToListAsync();
+        }
         if (filters.Availability != null)
         {
             query = query.Where(a => a.AvailabilityStatus == filters.Availability);
@@ -30,10 +35,16 @@ public class DeliveryAgentRepository(MySqlDbContext context) : IDeliveryAgentRep
         return await context.DeliveryAgents.FindAsync(id);
     }
 
+    public async Task<DeliveryAgent?> GetByEmailAsync(string email)
+    {
+        return await context.DeliveryAgents.FirstOrDefaultAsync(agent => agent.Email == email);
+    }
+
     public async Task<DeliveryAgent> CreateAsync(DeliveryAgent agent)
     {
         agent.DateAdded = DateTime.Now;
         agent.DateModified = DateTime.Now;
+        agent.Password = PasswordHasher.HashPassword(agent.Password);
         context.DeliveryAgents.Add(agent);
         await context.SaveChangesAsync();
         return agent;
@@ -41,10 +52,18 @@ public class DeliveryAgentRepository(MySqlDbContext context) : IDeliveryAgentRep
 
     public async Task<DeliveryAgent> UpdateAsync(DeliveryAgent agent)
     {
-        agent.DateModified = DateTime.Now;
-        context.DeliveryAgents.Update(agent);
-        await context.SaveChangesAsync();
-        return agent;
+        var existingAgent = await context.DeliveryAgents.FindAsync(agent.DeliveryAgentId);
+        if (existingAgent != null)
+        {
+            agent.Password = existingAgent.Password;
+            context.DeliveryAgents.Update(agent);
+            await context.SaveChangesAsync();
+            return agent;
+        }
+        else
+        {
+            throw new Exception("Agent not found");
+        }
     }
 
     public async Task<bool> DeleteAsync(int id)

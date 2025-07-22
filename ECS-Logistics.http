@@ -1,5 +1,5 @@
 @rootURL = http://localhost:5044
 
-GET {{rootURL}}/api/test
+GET {{rootURL}}/api/deliveryagents
 Accept: application/json
 ###

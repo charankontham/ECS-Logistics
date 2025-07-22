@@ -105,3 +105,6 @@
 /Users/charan/Documents/dotnet-apps/ECS-Logistics/bin/Debug/net9.0/Snappier.dll
 /Users/charan/Documents/dotnet-apps/ECS-Logistics/bin/Debug/net9.0/ZstdSharp.dll
 /Users/charan/Documents/dotnet-apps/ECS-Logistics/obj/Debug/net9.0/ECS-Logistics.sourcelink.json
+/Users/charan/Documents/dotnet-apps/ECS-Logistics/bin/Debug/net9.0/AutoMapper.dll
+/Users/charan/Documents/dotnet-apps/ECS-Logistics/bin/Debug/net9.0/AutoMapper.Extensions.Microsoft.DependencyInjection.dll
+/Users/charan/Documents/dotnet-apps/ECS-Logistics/bin/Debug/net9.0/BCrypt.Net-Next.dll

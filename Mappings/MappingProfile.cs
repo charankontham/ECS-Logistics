@@ -8,9 +8,8 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        CreateMap<DeliveryAgent, DeliveryAgentDto>();
-        CreateMap<DeliveryAgentDto, DeliveryAgent>()
-            .ForMember(dest => dest.DateAdded, opt => opt.Ignore())
-            .ForMember(dest => dest.DateModified, opt => opt.Ignore());
+        CreateMap<DeliveryAgent, DeliveryAgentDto>()
+            .ForMember(dest => dest.Password, opt => opt.Ignore());
+        CreateMap<DeliveryAgentDto, DeliveryAgent>();
     }
 }

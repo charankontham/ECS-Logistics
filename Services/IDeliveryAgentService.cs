@@ -5,9 +5,10 @@ namespace ECS_Logistics.Services;
 
 public interface IDeliveryAgentService
 {
-    Task<IEnumerable<DeliveryAgentDto>> GetAllAgentsAsync(DeliveryAgentFilters filters);
+    Task<IEnumerable<DeliveryAgentDto>> GetAllAgentsAsync(DeliveryAgentFilters? filters);
     Task<DeliveryAgentDto> GetAgentByIdAsync(int id);
-    Task<DeliveryAgentDto> CreateAgentAsync(DeliveryAgentDto dto);
-    Task<DeliveryAgentDto> UpdateAgentAsync(int id, DeliveryAgentDto dto);
+    Task<object> Login(string email, string password);
+    Task<object> CreateAgentAsync(DeliveryAgentDto dto);
+    Task<object> UpdateAgentAsync(DeliveryAgentDto dto);
     Task<bool> DeleteAgentAsync(int id);
 }

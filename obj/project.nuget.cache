@@ -1,11 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "z5TF1ivLF4s=",
+  "dgSpecHash": "YvxMICw/+Iw=",
   "success": true,
   "projectFilePath": "/Users/charan/Documents/dotnet-apps/ECS-Logistics/ECS-Logistics.csproj",
   "expectedPackageFiles": [
     "/Users/charan/.nuget/packages/automapper/12.0.1/automapper.12.0.1.nupkg.sha512",
     "/Users/charan/.nuget/packages/automapper.extensions.microsoft.dependencyinjection/12.0.1/automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",
+    "/Users/charan/.nuget/packages/bcrypt.net-next/4.0.3/bcrypt.net-next.4.0.3.nupkg.sha512",
     "/Users/charan/.nuget/packages/dnsclient/1.6.1/dnsclient.1.6.1.nupkg.sha512",
     "/Users/charan/.nuget/packages/humanizer.core/2.14.1/humanizer.core.2.14.1.nupkg.sha512",
     "/Users/charan/.nuget/packages/microsoft.aspnetcore.openapi/9.0.5/microsoft.aspnetcore.openapi.9.0.5.nupkg.sha512",

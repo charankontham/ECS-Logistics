@@ -1,20 +1,22 @@
 using ECS_Logistics.DTOs;
 using ECS_Logistics.Filters;
 using ECS_Logistics.Services;
+using ECS_Logistics.Utils;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECS_Logistics.Controllers;
-
+[Route("api/[controller]")]
+[ApiController]
 public class DeliveryAgentsController(IDeliveryAgentService service) : ControllerBase
 {
-        [HttpGet]
-        public async Task<IActionResult> GetAll([FromBody] DeliveryAgentFilters filters)
+        [HttpGet("getAllDeliveryAgents")]
+        public async Task<IActionResult> GetAll([FromBody] DeliveryAgentFilters? filters)
         {
             var agents = await service.GetAllAgentsAsync(filters);
-            return Ok(agents);
+            return await HelperFunctions.GetFinalHttpResponse(agents);
         }
     
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
             try
@@ -24,7 +26,7 @@ public class DeliveryAgentsController(IDeliveryAgentService service) : Controlle
             }
             catch (Exception ex)
             {
-                return NotFound(ex.Message);
+                return NotFound("Delivery Agent not found!");
             }
         }
         
@@ -32,39 +34,24 @@ public class DeliveryAgentsController(IDeliveryAgentService service) : Controlle
         public async Task<IActionResult> Create([FromBody] DeliveryAgentDto agentDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            var createdAgent = await service.CreateAgentAsync(agentDto);
-            return CreatedAtAction(nameof(GetById), new { id = createdAgent.DeliveryAgentId }, createdAgent);
+            var response = await HelperFunctions.GetFinalHttpResponse(await service.CreateAgentAsync(agentDto));
+            return response is OkObjectResult { Value: DeliveryAgentDto createdAgent } ? 
+                CreatedAtAction(nameof(GetById), new { id = createdAgent.DeliveryAgentId }, createdAgent) : 
+                response;
         }
         
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] DeliveryAgentDto agentDto)
+        [HttpPut]
+        public async Task<IActionResult> Update([FromBody] DeliveryAgentDto agentDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            if (id != agentDto.DeliveryAgentId) return BadRequest("ID mismatch");
-            try
-            {
-                var updatedAgentDto = await service.UpdateAgentAsync(id, agentDto);
-                return Ok(updatedAgentDto);
-            }
-            catch (Exception ex)
-            {
-                return NotFound(ex.Message);
-            }
+            agentDto.Password = "";
+            return await HelperFunctions.GetFinalHttpResponse(await service.UpdateAgentAsync(agentDto));
         }
 
     
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            try
-            {
-                var response = await service.DeleteAgentAsync(id);
-                if (response) return NoContent();
-                else return NotFound();
-            }
-            catch (Exception ex)
-            {
-                return NotFound(ex.Message);
-            }
+            return await HelperFunctions.GetFinalHttpResponse(await service.DeleteAgentAsync(id));
         }
 }
