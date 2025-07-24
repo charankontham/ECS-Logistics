@@ -10,16 +10,21 @@ public class HelperFunctions
     {
         if (response is StatusCodesEnum statusCode)
         {
+            var failedResponse = new BadRequestObjectResult(new
+            {
+                Message = "",
+                StatusCode = 400
+            });
             switch (statusCode)
             {
                 case StatusCodesEnum.InvalidEmail:
-                    return Task.FromResult<IActionResult>(new BadRequestObjectResult(new
-                    {
-                        Message = "Invalid Email!",
-                        StatusCode = 400
-                    }));
+                    failedResponse.Value = "Invalid email!";
+                    failedResponse.StatusCode = 400;
+                    return Task.FromResult<IActionResult>(failedResponse);
                     break;
                 case StatusCodesEnum.InvalidPassword:
+                    failedResponse.Value = "Invalid password!";
+                    failedResponse.StatusCode = 400;
                     return Task.FromResult<IActionResult>(new BadRequestObjectResult(new
                     {
                         Message = "Invalid password!",
@@ -27,25 +32,39 @@ public class HelperFunctions
                     }));
                     break;
                 case StatusCodesEnum.DeliveryAgentNotFound:
-                    return Task.FromResult<IActionResult>(new NotFoundObjectResult(new
-                    {
-                        Message = "Delivery Agent not found!",
-                        StatusCode = 400
-                    }));
+                    failedResponse.Value = "Delivery Agent not found!";
+                    failedResponse.StatusCode = 404;
+                    return Task.FromResult<IActionResult>(failedResponse);
                     break;
                 case StatusCodesEnum.EmailAlreadyExists:
-                    return Task.FromResult<IActionResult>(new BadRequestObjectResult(new
-                    {
-                        Message = "Email already exists!",
-                        StatusCode = 409
-                    }));
+                    failedResponse.Value = "Email already exists!";
+                    failedResponse.StatusCode = 409;
+                    return Task.FromResult<IActionResult>(failedResponse);
+                    break;
+                case StatusCodesEnum.DeliveryHubNotFound:
+                    failedResponse.Value = "Delivery Hub not found!";
+                    failedResponse.StatusCode = 404;
+                    return Task.FromResult<IActionResult>(failedResponse);
+                    break;
+                case StatusCodesEnum.DeliveryHubNameAlreadyExists:
+                    failedResponse.Value = "DeliveryHub Name already exists!";
+                    failedResponse.StatusCode = 409;
+                    return Task.FromResult<IActionResult>(failedResponse);
+                    break;
+                case StatusCodesEnum.AddressNotFound:
+                    failedResponse.Value = "Address not found!";
+                    failedResponse.StatusCode = 404;
+                    return Task.FromResult<IActionResult>(failedResponse);
+                    break;
+                case StatusCodesEnum.AuthenticationFailed:
+                    failedResponse.Value = "Authentication failed!";
+                    failedResponse.StatusCode = 401;
+                    return Task.FromResult<IActionResult>(failedResponse);
                     break;
                 default:
-                    return Task.FromResult<IActionResult>(new BadRequestObjectResult(new
-                    {
-                        Message = "Unknown error!",
-                        StatusCode = 400
-                    }));
+                    failedResponse.Value = "Unknown error! check logs";
+                    failedResponse.StatusCode = 500;
+                    return Task.FromResult<IActionResult>(failedResponse);
                     break;
             }
         }

@@ -3,7 +3,7 @@ namespace ECS_Logistics.DTOs;
 public class AddressDto
 {
     public int? AddressId { get; set; }
-    public int? CustomerId { get; set; }
+    public string? UserId { get; set; }
     public string? Name { get; set; }
     public string? Contact { get; set; }
     public string? Street { get; set; }

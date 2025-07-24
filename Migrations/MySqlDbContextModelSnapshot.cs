@@ -98,7 +98,19 @@ namespace ECS_Logistics.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("DeliveryHubId"));
 
-                    b.Property<int>("DeliveryHubAddressId")
+                    b.Property<DateTime>("DateAdded")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("date_added");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<DateTime>("DateAdded"));
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("date_modified");
+
+                    b.Property<int?>("DeliveryHubAddressId")
+                        .IsRequired()
                         .HasColumnType("int")
                         .HasColumnName("delivery_hub_address_id");
 

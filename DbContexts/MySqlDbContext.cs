@@ -61,8 +61,13 @@ public class MySqlDbContext(DbContextOptions<MySqlDbContext> options) : DbContex
         modelBuilder.Entity<DeliveryHub>(entity =>
         {
             entity.ToTable("delivery_hubs");
+            entity.Property(e => e.DateAdded)
+                .ValueGeneratedOnAdd()
+                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Ignore);
             entity.Property(e => e.DeliveryHubName).IsRequired();
-            entity.Property(e => e.DeliveryHubAddressId).IsRequired();
+            entity.Property(e => e.DateAdded).IsRequired();
+            entity.Property(e => e.DateModified).IsRequired();
         });
+        
     }
 }

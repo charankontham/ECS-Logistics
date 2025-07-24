@@ -13,8 +13,15 @@ public class DeliveryHub
     [Column("delivery_hub_name")]
     [StringLength(500)]
     public required string DeliveryHubName { get; set; }
-
-    [Required]
+    
     [Column("delivery_hub_address_id")]
-    public required int DeliveryHubAddressId { get; set; }
+    public int? DeliveryHubAddressId { get; set; }
+    
+    [Required]
+    [Column("date_added")]
+    public required DateTime DateAdded { get; set; }
+    
+    [Required]
+    [Column("date_modified")]
+    public required DateTime DateModified { get; set; }
 }

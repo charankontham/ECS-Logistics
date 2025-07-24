@@ -2,14 +2,16 @@ using ECS_Logistics.DTOs;
 using ECS_Logistics.Filters;
 using ECS_Logistics.Services;
 using ECS_Logistics.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECS_Logistics.Controllers;
-[Route("api/[controller]")]
+[Route("api/DeliveryAgents")]
 [ApiController]
+[Authorize(Roles = "ROLE_INVENTORY_ADMIN")]
 public class DeliveryAgentsController(IDeliveryAgentService service) : ControllerBase
 {
-        [HttpGet("getAllDeliveryAgents")]
+        [HttpGet("getAll")]
         public async Task<IActionResult> GetAll([FromBody] DeliveryAgentFilters? filters)
         {
             var agents = await service.GetAllAgentsAsync(filters);
@@ -21,8 +23,12 @@ public class DeliveryAgentsController(IDeliveryAgentService service) : Controlle
         {
             try
             {
-                var agent = await service.GetAgentByIdAsync(id);
-                return Ok(agent);
+                var response = await service.GetAgentByIdAsync(id);
+                if (response is StatusCodesEnum.DeliveryAgentNotFound)
+                {
+                    return await HelperFunctions.GetFinalHttpResponse(response);
+                }
+                return Ok((DeliveryAgentDto)response);
             }
             catch (Exception ex)
             {

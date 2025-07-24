@@ -42,8 +42,6 @@ public class DeliveryAgentRepository(MySqlDbContext context) : IDeliveryAgentRep
 
     public async Task<DeliveryAgent> CreateAsync(DeliveryAgent agent)
     {
-        agent.DateAdded = DateTime.Now;
-        agent.DateModified = DateTime.Now;
         agent.Password = PasswordHasher.HashPassword(agent.Password);
         context.DeliveryAgents.Add(agent);
         await context.SaveChangesAsync();
@@ -56,6 +54,8 @@ public class DeliveryAgentRepository(MySqlDbContext context) : IDeliveryAgentRep
         if (existingAgent != null)
         {
             agent.Password = existingAgent.Password;
+            agent.DateAdded = existingAgent.DateAdded;
+            context.Entry(existingAgent).State = EntityState.Detached;
             context.DeliveryAgents.Update(agent);
             await context.SaveChangesAsync();
             return agent;
@@ -69,15 +69,9 @@ public class DeliveryAgentRepository(MySqlDbContext context) : IDeliveryAgentRep
     public async Task<bool> DeleteAsync(int id)
     {
         var agent = await context.DeliveryAgents.FindAsync(id);
-        if (agent != null)
-        {
-            context.DeliveryAgents.Remove(agent);
-            await context.SaveChangesAsync();
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        if (agent == null) return false;
+        context.DeliveryAgents.Remove(agent);
+        await context.SaveChangesAsync();
+        return true;
     }
 }

@@ -17,10 +17,10 @@ public class DeliveryAgentService(IDeliveryAgentRepository repository, IMapper m
             return mapper.Map<IEnumerable<DeliveryAgentDto>>(agents);
         }
 
-        public async Task<DeliveryAgentDto> GetAgentByIdAsync(int id)
+        public async Task<object> GetAgentByIdAsync(int id)
         {
             var agent = await repository.GetByIdAsync(id);
-            if (agent == null) throw new Exception("Agent not found!");
+            if (agent == null) return StatusCodesEnum.DeliveryAgentNotFound;
             return mapper.Map<DeliveryAgentDto>(agent);
         }
 
@@ -49,15 +49,15 @@ public class DeliveryAgentService(IDeliveryAgentRepository repository, IMapper m
             }
         }
 
-        public async Task<object> CreateAgentAsync(DeliveryAgentDto dto)
+        public async Task<object> CreateAgentAsync(DeliveryAgentDto agentDto)
         {
-            if (context.DeliveryAgents.Any(x => x.Email == dto.Email))
+            if (context.DeliveryAgents.Any(x => x.Email == agentDto.Email))
             {
                 return StatusCodesEnum.EmailAlreadyExists;
             }
-            var agent = mapper.Map<DeliveryAgent>(dto);
-            agent.DateAdded = DateTime.Now;
-            agent.DateModified = DateTime.Now;
+            agentDto.DateAdded = DateTime.Now;
+            agentDto.DateModified = DateTime.Now;
+            var agent = mapper.Map<DeliveryAgent>(agentDto);
             var createdAgent = await repository.CreateAsync(agent);
             return mapper.Map<DeliveryAgentDto>(createdAgent);
         }
@@ -68,11 +68,8 @@ public class DeliveryAgentService(IDeliveryAgentRepository repository, IMapper m
             {
                 return StatusCodesEnum.DeliveryAgentNotFound;
             }
-            var agent = await repository.GetByIdAsync((int) agentDto.DeliveryAgentId!);
-            if (agent == null) return StatusCodesEnum.DeliveryAgentNotFound;
-            mapper.Map(agentDto, agent);
-            agent.DateModified = DateTime.Now;
-            var updatedAgent =  await repository.UpdateAsync(agent);
+            agentDto.DateModified = DateTime.Now;
+            var updatedAgent =  await repository.UpdateAsync(mapper.Map<DeliveryAgent>(agentDto));
             return mapper.Map<DeliveryAgentDto>(updatedAgent);
         }
 
