@@ -10,6 +10,12 @@ public enum StatusCodesEnum
     DeliveryHubNameAlreadyExists = 6,
     DeliveryHubNotFound = 7,
     AddressNotFound = 8,
+    OrderReturnNotFound = 9,
+    OrderTrackingNotFound = 10,
+    InternalServerError = 11,
+    EnrichedDtoMappingsFailed = 12,
+    FailedToUpdateOrderTracking = 13,
+    ValidationFailed = 14,
     NoErrorFound = 20,
 }
 

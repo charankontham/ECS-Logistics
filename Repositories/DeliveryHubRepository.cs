@@ -20,6 +20,7 @@ public class DeliveryHubRepository(MySqlDbContext context, ILogger<DeliveryHubRe
             query = query.Where(a =>
                 a.DeliveryHubName.Contains(filters.DeliveryHubName, StringComparison.CurrentCultureIgnoreCase));
         }
+        /* Applied all possible filters before retrieving from database to reduce the load */
         return await query.ToListAsync();
     }
 

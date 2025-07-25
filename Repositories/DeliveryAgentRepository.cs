@@ -27,6 +27,7 @@ public class DeliveryAgentRepository(MySqlDbContext context) : IDeliveryAgentRep
         {
             query = query.Where(a => a.DeliveryAgentName == filters.DeliveryAgentName);
         }
+        /* Applied all possible filters before retrieving from database to reduce the load */
         return await query.ToListAsync();
     }
 

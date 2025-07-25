@@ -17,33 +17,38 @@ using Steeltoe.Discovery.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration
+    .AddJsonFile("appsettings.json")
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
+    .AddUserSecrets<Program>();
+
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
-builder.Services.AddLogging(logging =>
-{
-    logging.AddSerilog(new LoggerConfiguration().WriteTo.Console().CreateLogger());
-});
+builder.Services.AddLogging(logging => { logging.AddSerilog(new LoggerConfiguration().WriteTo.Console().CreateLogger()); });
 builder.Services.AddDbContext<MySqlDbContext>(options =>
     options.UseMySql(builder.Configuration.GetConnectionString("MySql"),
-        new MySqlServerVersion(new Version(8, 0, 29))
-        ).EnableSensitiveDataLogging()
-    );
-builder.Services.AddSingleton<IMongoClient>(new MongoClient(
-    builder.Configuration.GetConnectionString("MongoDB"))
-);
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddSingleton<FeignClient>();
-builder.Services.AddSingleton<CustomerService>();
-builder.Services.AddSingleton<AddressResolver>();
+        new MySqlServerVersion(new Version(8, 0, 29))).EnableSensitiveDataLogging());
+builder.Services.AddSingleton<IMongoClient>(new MongoClient(builder.Configuration.GetConnectionString("MongoDB")));
 builder.Services.AddSingleton<MongoDbContext>();
+// builder.Services.AddSingleton(sp =>
+//     sp.GetRequiredService<IMongoClient>().GetDatabase("ecs-shopper"));
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddDiscoveryClient(builder.Configuration);
 builder.Services.AddHttpClient();
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddHttpClient<DistanceService>();
+
+builder.Services.AddSingleton<FeignClient>();
+builder.Services.AddSingleton<CustomerService>();
+builder.Services.AddSingleton<AddressResolver>();
+
 builder.Services.AddScoped<IDeliveryAgentRepository, DeliveryAgentRepository>();
-builder.Services.AddScoped<IDeliveryAgentService, DeliveryAgentService>();
 builder.Services.AddScoped<IDeliveryHubRepository, DeliveryHubRepository>();
-builder.Services.AddScoped<IDeliveryHubService, DeliveryHubService>();
+
 builder.Services.AddScoped<IJwtTokenValidation, JwtTokenValidation>();
+builder.Services.AddScoped<IDeliveryAgentService, DeliveryAgentService>();
+builder.Services.AddScoped<IDeliveryHubService, DeliveryHubService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

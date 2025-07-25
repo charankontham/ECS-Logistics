@@ -10,4 +10,9 @@ public class CustomerService(FeignClient feignClient)
     {
         return await feignClient.GetAsync<AddressDto>(ServiceName, $"api/address/{id}");
     }
+
+    public async Task<CustomerDto?> GetCustomerById(int customerId)
+    {
+        return await feignClient.GetAsync<CustomerDto>(ServiceName, $"api/customer/{customerId}");
+    }
 }

@@ -76,4 +76,19 @@ public class HelperFunctions
 
         return Task.FromResult<IActionResult>(new OkObjectResult(response));
     }
+    
+    public static TimeSpan ParseGoogleDuration(string durationText)
+    {
+        int hours = 0;
+        int minutes = 0;
+        var parts = durationText.Split(' ');
+        for (int i = 0; i < parts.Length; i++)
+        {
+            if (parts[i].Contains("hour"))
+                hours = int.Parse(parts[i - 1]);
+            else if (parts[i].Contains("min"))
+                minutes = int.Parse(parts[i - 1]);
+        }
+        return new TimeSpan(hours, minutes, 0);
+    }
 }

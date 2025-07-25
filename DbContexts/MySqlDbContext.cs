@@ -48,10 +48,8 @@ public class MySqlDbContext(DbContextOptions<MySqlDbContext> options) : DbContex
             entity.Property(e => e.DateAdded)
                 .ValueGeneratedOnAdd()
                 .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Ignore);
-            entity.Property(e => e.OrderId).IsRequired();
+            entity.Property(e => e.CustomerId).IsRequired();
             entity.Property(e => e.OrderTrackingId).IsRequired();
-            entity.Property(e => e.DeliveryAgentId).IsRequired();
-            entity.Property(e => e.OrderItemId).IsRequired();
             entity.Property(e => e.ReturnReasonCategoryId).IsRequired();
             entity.Property(e => e.DateAdded).IsRequired();
             entity.Property(e => e.DateModified).IsRequired();

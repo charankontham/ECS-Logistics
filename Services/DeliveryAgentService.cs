@@ -13,7 +13,6 @@ public class DeliveryAgentService(IDeliveryAgentRepository repository, IMapper m
     public async Task<IEnumerable<DeliveryAgentDto>> GetAllAgentsAsync(DeliveryAgentFilters? filters)
         {
             var agents = await repository.GetAllAsync(filters);
-            
             return mapper.Map<IEnumerable<DeliveryAgentDto>>(agents);
         }
 
