@@ -1,11 +1,12 @@
 using ECS_Logistics.Data;
+using ECS_Logistics.DbContexts;
 using ECS_Logistics.Filters;
 using ECS_Logistics.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECS_Logistics.Repositories;
 
-public class OrderReturnRepository(MySqlDbContext context, ILogger<OrderReturnRepository> logger) : IOrderReturnRepository
+public class OrderReturnRepository(MySqlDbContext context) : IOrderReturnRepository
 {
     public async Task<IEnumerable<OrderReturn>> GetAllAsync(OrderReturnFilters? filters)
     {

@@ -4,17 +4,17 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ECS_Logistics.Utils;
 
-public class HelperFunctions
+public abstract class HelperFunctions
 {
     public static Task<IActionResult> GetFinalHttpResponse(object response)
     {
+        var failedResponse = new BadRequestObjectResult(new
+        {
+            Message = "",
+            StatusCode = 400
+        });
         if (response is StatusCodesEnum statusCode)
         {
-            var failedResponse = new BadRequestObjectResult(new
-            {
-                Message = "",
-                StatusCode = 400
-            });
             switch (statusCode)
             {
                 case StatusCodesEnum.InvalidEmail:
@@ -61,17 +61,30 @@ public class HelperFunctions
                     failedResponse.StatusCode = 401;
                     return Task.FromResult<IActionResult>(failedResponse);
                     break;
+                case StatusCodesEnum.DuplicateOrderTracking:
+                    failedResponse.Value = "Duplicate order tracking!";
+                    failedResponse.StatusCode = 409;
+                    return Task.FromResult<IActionResult>(failedResponse);
+                    break;
+                case StatusCodesEnum.ValidationFailed:
+                    failedResponse.Value = "Validation failed!";
+                    failedResponse.StatusCode = 400;
+                    return Task.FromResult<IActionResult>(failedResponse);
+                    break;
                 default:
                     failedResponse.Value = "Unknown error! check logs";
                     failedResponse.StatusCode = 500;
+                    Console.WriteLine($"Status code : {statusCode} ");
                     return Task.FromResult<IActionResult>(failedResponse);
                     break;
             }
         }
-
         if (response is bool)
         {
-            return Task.FromResult<IActionResult>(new NoContentResult());
+            failedResponse.Value = "Id Not found!";
+            failedResponse.StatusCode = 404;
+            return response as bool? == true ? 
+                Task.FromResult<IActionResult>(new NoContentResult()) : Task.FromResult<IActionResult>(failedResponse);
         }
 
         return Task.FromResult<IActionResult>(new OkObjectResult(response));
@@ -79,10 +92,10 @@ public class HelperFunctions
     
     public static TimeSpan ParseGoogleDuration(string durationText)
     {
-        int hours = 0;
-        int minutes = 0;
+        var hours = 0;
+        var minutes = 0;
         var parts = durationText.Split(' ');
-        for (int i = 0; i < parts.Length; i++)
+        for (var i = 0; i < parts.Length; i++)
         {
             if (parts[i].Contains("hour"))
                 hours = int.Parse(parts[i - 1]);

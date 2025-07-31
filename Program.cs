@@ -1,6 +1,7 @@
 using System.Text;
 using ECS_Logistics.Configs;
 using ECS_Logistics.Data;
+using ECS_Logistics.DbContexts;
 using ECS_Logistics.DTOs;
 using ECS_Logistics.FeignClients;
 using ECS_Logistics.Mappings;
@@ -30,25 +31,45 @@ builder.Services.AddDbContext<MySqlDbContext>(options =>
         new MySqlServerVersion(new Version(8, 0, 29))).EnableSensitiveDataLogging());
 builder.Services.AddSingleton<IMongoClient>(new MongoClient(builder.Configuration.GetConnectionString("MongoDB")));
 builder.Services.AddSingleton<MongoDbContext>();
-// builder.Services.AddSingleton(sp =>
-//     sp.GetRequiredService<IMongoClient>().GetDatabase("ecs-shopper"));
+builder.Services.AddSingleton(sp =>
+    sp.GetRequiredService<IMongoClient>().GetDatabase("ecs-shopper"));
+
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddDiscoveryClient(builder.Configuration);
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddHttpClient<DistanceService>();
+builder.Services.AddHttpClient<ZipcodeService>();
 
 builder.Services.AddSingleton<FeignClient>();
+builder.Services.AddSingleton<ProductService>();
+builder.Services.AddSingleton<InventoryService>();
 builder.Services.AddSingleton<CustomerService>();
+builder.Services.AddSingleton<OrderService>();
+
 builder.Services.AddSingleton<AddressResolver>();
+builder.Services.AddScoped<OrderTrackingResolver>();
+builder.Services.AddSingleton<OrderItemResolver>();
+builder.Services.AddSingleton<ProductFinalResolver>();
+builder.Services.AddSingleton<DeliveryAgentResolver>();
+builder.Services.AddSingleton<DeliveryHubResolver>();
+builder.Services.AddSingleton<CustomerAddressResolver>();
+builder.Services.AddSingleton<ProductIdResolver>();
+builder.Services.AddSingleton<CategoryIdResolver>();
+builder.Services.AddSingleton<SubCategoryIdResolver>();
+builder.Services.AddSingleton<BrandIdResolver>();
 
 builder.Services.AddScoped<IDeliveryAgentRepository, DeliveryAgentRepository>();
 builder.Services.AddScoped<IDeliveryHubRepository, DeliveryHubRepository>();
+builder.Services.AddScoped<IOrderReturnRepository, OrderReturnRepository>();
+builder.Services.AddScoped<IOrderTrackingRepository, OrderTrackingRepository>();
 
 builder.Services.AddScoped<IJwtTokenValidation, JwtTokenValidation>();
 builder.Services.AddScoped<IDeliveryAgentService, DeliveryAgentService>();
 builder.Services.AddScoped<IDeliveryHubService, DeliveryHubService>();
+builder.Services.AddScoped<IOrderReturnService, OrderReturnService>();
+builder.Services.AddScoped<IOrderTrackingService, OrderTrackingService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -87,15 +108,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     context.Fail("Authorization Failed!");
                     return;
                 }
-                AdminDataDto userDetails = (dynamic) response;
+                string authenticatedUserName = "";
+                string authenticatedUserRole = "";
+                if (response is AdminDataDto adminResponse)
+                {
+                    authenticatedUserName = adminResponse.AdminUsername;
+                    authenticatedUserRole = adminResponse.AdminRole.SubRole.ToUpper() + "_" + 
+                                            adminResponse.AdminRole.RoleName.ToUpper();
+                }else if (response is CustomerDto customerResponse)
+                {
+                    authenticatedUserName = customerResponse.Email;
+                    authenticatedUserRole = "CUSTOMER";
+                }
+                Console.WriteLine($"User role : {authenticatedUserRole}");
                 var claims = new List<System.Security.Claims.Claim>
                 {
                     new System.Security.Claims.Claim(
-                        System.Security.Claims.ClaimTypes.Name, userDetails.AdminUsername),
+                        System.Security.Claims.ClaimTypes.Name, authenticatedUserName),
                     new System.Security.Claims.Claim(
                         System.Security.Claims.ClaimTypes.Role, 
-                        "ROLE_" + userDetails.AdminRole.SubRole.ToUpper() + "_" + 
-                        userDetails.AdminRole.RoleName.ToUpper())
+                        "ROLE_" + authenticatedUserRole)
                 };
                 var identity = new System.Security.Claims.ClaimsIdentity(
                     claims, JwtBearerDefaults.AuthenticationScheme);

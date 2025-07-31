@@ -2,10 +2,10 @@ namespace ECS_Logistics.DTOs;
 
 public class ProductFinalDto
 {
-    public int? ProductId { get; set; }
-    public string? ProductName { get; set; }
-    public ProductBrandDto? Brand { get; set; }
-    public SubCategoryEnrichedDto? ProductSubCategory { get; set; }
+    public int ProductId { get; set; }
+    public string ProductName { get; set; }
+    public ProductBrandDto Brand { get; set; }
+    public SubCategoryEnrichedDto ProductSubCategory { get; set; }
     public string? ProductDescription { get; set; }
     public float? ProductPrice { get; set; }
     public int? ProductQuantity { get; set; }

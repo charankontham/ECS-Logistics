@@ -5,18 +5,30 @@ using MongoDB.Driver;
 
 namespace ECS_Logistics.Repositories;
 
-public class OrderTrackingRepository(IMongoCollection<OrderTracking> orderTracking) : IOrderTrackingRepository
+public class OrderTrackingRepository(
+    IMongoDatabase database, 
+    ILogger<OrderReturnRepository> logger
+    ) : IOrderTrackingRepository
 {
-    private readonly IMongoCollection<OrderTracking> _orderTracking = orderTracking;
+    private readonly IMongoCollection<OrderTracking> _orderTracking = 
+        database.GetCollection<OrderTracking>("order_tracking");
 
-    public OrderTrackingRepository(IMongoDatabase database, IMongoCollection<OrderTracking> orderTracking) : this(orderTracking)
-    {
-        _orderTracking = database.GetCollection<OrderTracking>("OrderTracking");
-    }
-    
     public async Task<IEnumerable<OrderTracking>> GetAllByAgentIdAsync(int agentId)
     {
         return await _orderTracking.Find(ot => ot.DeliveryAgentId == agentId).ToListAsync();
+    }
+
+    public async Task<IEnumerable<OrderTracking>> GetAllByOrderItemIdAsync(int orderItemId)
+    {
+        try
+        {
+            return await _orderTracking.Find(ot => ot.OrderItemId == orderItemId).ToListAsync();
+        }
+        catch(MongoAuthenticationException e)
+        {
+            logger.LogError(e.Message, " MongoDB authentication failed");
+            throw;
+        }
     }
 
     public async Task<OrderTracking?> GetByIdAsync(ObjectId orderTrackingId)

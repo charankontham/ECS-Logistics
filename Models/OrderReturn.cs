@@ -10,12 +10,21 @@ public class OrderReturn
     public int OrderReturnId { get; set; }
     
     [Required]
+    [Column("order_item_id")]
+    public int OrderItemId { get; set; }
+    
+    [Required]
+    [Column("product_quantity")]
+    public int ProductQuantity { get; set; }
+    
+    [Required]
     [Column("customer_id")]
     public required int CustomerId { get; set; }
 
     [Required]
     [Column("order_tracking_id")]
-    public required int OrderTrackingId { get; set; }
+    [StringLength(50)]
+    public required string OrderTrackingId { get; set; }
     
     [Column("product_id")]
     public int? ProductId { get; set; }

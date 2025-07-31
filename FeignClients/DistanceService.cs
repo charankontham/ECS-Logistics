@@ -4,9 +4,9 @@ using Newtonsoft.Json;
 
 namespace ECS_Logistics.FeignClients;
 
-public class DistanceService(IConfiguration configuration,HttpClient httpClient)
+public class DistanceService(IConfiguration configuration, HttpClient httpClient)
 {
-    private string _apiKey = configuration["GoogleMaps:ApiKey"] ?? String.Empty;
+    private readonly string _apiKey = configuration["GoogleMaps:ApiKey"] ?? string.Empty;
     public async Task<(double DistanceInKm, string DurationText)> GetDistanceAsync(string origin, string destination)
     {
         var url = $"https://maps.googleapis.com/maps/api/distancematrix/json?origins=" +

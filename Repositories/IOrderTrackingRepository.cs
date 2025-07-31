@@ -6,8 +6,9 @@ namespace ECS_Logistics.Repositories;
 
 public interface IOrderTrackingRepository
 {
-    Task<IEnumerable<OrderTracking>> GetAllByAgentIdAsync(int agentId);
     Task<OrderTracking?> GetByIdAsync(ObjectId orderTrackingId);
+    Task<IEnumerable<OrderTracking>> GetAllByAgentIdAsync(int agentId);
+    Task<IEnumerable<OrderTracking>> GetAllByOrderItemIdAsync(int orderItemId);
     Task<OrderTracking> CreateAsync(OrderTracking orderTracking);
     Task<OrderTracking?> UpdateAsync(OrderTracking orderTracking);
 }

@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECS_Logistics.Controllers;
-[Route("api/DeliveryAgents")]
+[Route("api/deliveryAgents")]
 [ApiController]
-[Authorize(Roles = "ROLE_INVENTORY_ADMIN")]
+[Authorize(Roles = "ROLE_LOGISTICS_ADMIN")]
 public class DeliveryAgentsController(IDeliveryAgentService service) : ControllerBase
 {
         [HttpGet("getAll")]

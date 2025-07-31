@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ECS_Logistics.Controllers;
 [Route("api/deliveryHubs")]
 [ApiController]
-[Authorize(Roles = "ROLE_INVENTORY_ADMIN")]
+[Authorize(Roles = "ROLE_LOGISTICS_ADMIN")]
 public class DeliveryHubsController(IDeliveryHubService service) : ControllerBase
 {
     [HttpGet("getAll")]

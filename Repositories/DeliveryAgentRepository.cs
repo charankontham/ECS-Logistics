@@ -1,4 +1,5 @@
 using ECS_Logistics.Data;
+using ECS_Logistics.DbContexts;
 using ECS_Logistics.Filters;
 using ECS_Logistics.Models;
 using ECS_Logistics.Utils;
@@ -15,13 +16,13 @@ public class DeliveryAgentRepository(MySqlDbContext context) : IDeliveryAgentRep
         {
             return await query.ToListAsync();
         }
-        if (filters.Availability != null)
+        if (filters.Availability is { Count: > 0 } && filters.Availability.Any())
         {
-            query = query.Where(a => a.AvailabilityStatus == filters.Availability);
+            query = query.Where(a => filters.Availability.Contains(a.AvailabilityStatus));
         }
-        if (filters.ServingArea != null)
+        if (filters.ServingArea is {Count: >0 } && filters.ServingArea.Any())
         {
-            query = query.Where(a => a.ServingArea == filters.ServingArea);
+            query = query.Where(a => filters.ServingArea.Contains(a.ServingArea));
         }
         if (filters.DeliveryAgentName != null)
         {

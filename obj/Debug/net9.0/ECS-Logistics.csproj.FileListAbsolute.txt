@@ -148,3 +148,4 @@
 /Users/charan/Documents/dotnet-apps/ECS-Logistics/bin/Debug/net9.0/Microsoft.Extensions.Options.dll
 /Users/charan/Documents/dotnet-apps/ECS-Logistics/bin/Debug/net9.0/Microsoft.Extensions.Options.ConfigurationExtensions.dll
 /Users/charan/Documents/dotnet-apps/ECS-Logistics/bin/Debug/net9.0/Microsoft.Extensions.Primitives.dll
+/Users/charan/Documents/dotnet-apps/ECS-Logistics/bin/Debug/net9.0/Newtonsoft.Json.dll

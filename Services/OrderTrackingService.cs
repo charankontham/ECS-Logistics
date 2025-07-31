@@ -1,6 +1,7 @@
 using AutoMapper;
 using ECS_Logistics.DTOs;
 using ECS_Logistics.FeignClients;
+using ECS_Logistics.Filters;
 using ECS_Logistics.Models;
 using ECS_Logistics.Repositories;
 using ECS_Logistics.Utils;
@@ -12,10 +13,11 @@ public class OrderTrackingService(
     IOrderTrackingRepository orderTrackingRepository, 
     IMapper mapper,
     ILogger<OrderReturnService> logger,
+    OrderService orderService,
     ProductService productService,
     CustomerService customerService,
-    IDeliveryHubRepository deliveryHubRepository,
-    IDeliveryAgentRepository deliveryAgentRepository,
+    IDeliveryHubService deliveryHubService,
+    IDeliveryAgentService deliveryAgentService,
     DistanceService distanceService) : IOrderTrackingService
 {
     public async Task<object> GetAllByAgentIdAsync(int agentId)
@@ -27,8 +29,9 @@ public class OrderTrackingService(
         {
             try
             {
-                var enrichedData = await FetchEnrichedDtoRequiredFields(
+                var enrichedData = await FetchEnrichmentFields(
                     orderTracking.OrderItemId,
+                    orderTracking.ProductId,
                     orderTracking.CustomerAddressId,
                     orderTracking.DeliveryAgentId,
                     orderTracking.NearestHubId);
@@ -37,6 +40,7 @@ public class OrderTrackingService(
                 {
                     opts.Items.Add("CustomerAddress", enrichedData["CustomerAddress"]);
                     opts.Items.Add("OrderItem", enrichedData["OrderItem"]);
+                    opts.Items.Add("Product", enrichedData["Product"]);
                     opts.Items.Add("DeliveryAgent", enrichedData["DeliveryAgent"]);
                     opts.Items.Add("NearestHub", enrichedData["NearestHub"]);
                 });
@@ -57,10 +61,12 @@ public class OrderTrackingService(
             var orderTracking = await orderTrackingRepository.GetByIdAsync(ObjectId.Parse(orderTrackingId));
             if (orderTracking == null)
             {
+                logger.LogWarning("Order tracking not found!");
                 return StatusCodesEnum.OrderTrackingNotFound;
             }
-            var enrichedData = await FetchEnrichedDtoRequiredFields(
+            var enrichedData = await FetchEnrichmentFields(
                 orderTracking.OrderItemId,
+                orderTracking.ProductId,
                 orderTracking.CustomerAddressId,
                 orderTracking.DeliveryAgentId,
                 orderTracking.NearestHubId);
@@ -69,6 +75,7 @@ public class OrderTrackingService(
                 {
                     opts.Items.Add("CustomerAddress", enrichedData["CustomerAddress"]);
                     opts.Items.Add("OrderItem", enrichedData["OrderItem"]);
+                    opts.Items.Add("Product", enrichedData["Product"]);
                     opts.Items.Add("DeliveryAgent", enrichedData["DeliveryAgent"]);
                     opts.Items.Add("NearestHub", enrichedData["NearestHub"]);
                 });
@@ -83,8 +90,9 @@ public class OrderTrackingService(
     {
         try
         {
-            var enrichedData = await FetchEnrichedDtoRequiredFields(
+            var enrichedData = await FetchEnrichmentFields(
                 orderTrackingDto.OrderItemId,
+                orderTrackingDto.ProductId,
                 orderTrackingDto.CustomerAddressId,
                 orderTrackingDto.DeliveryAgentId,
                 orderTrackingDto.NearestHubId);
@@ -96,25 +104,36 @@ public class OrderTrackingService(
                 enrichedData["NearestHub"] as DeliveryHubEnrichedDto);
             if (orderTrackingDto.DeliveryAgentId == null && orderTrackingDto.NearestHubId != null)
             {
-                orderTrackingDto.DeliveryAgentId = await AssignAvailableNearestDeliveryAgent(
-                    orderTrackingDto.CustomerAddressId, orderTrackingDto.NearestHubId ?? 0, orderTrackingDto.OrderTrackingType);
+                orderTrackingDto.DeliveryAgentId = await AssignAvailableNearestDeliveryAgent(orderTrackingDto.NearestHubId ?? 0);
+            }
+            var currentOrdersTracking = 
+                await orderTrackingRepository.GetAllByOrderItemIdAsync(orderTrackingDto.OrderItemId);
+            var alreadyOrderTrackingExists = currentOrdersTracking.ToList().Find(ot =>
+                ot.ProductId == orderTrackingDto.ProductId &&
+                ot.OrderItemId == orderTrackingDto.OrderItemId &&
+                ot.OrderTrackingType == orderTrackingDto.OrderTrackingType
+            );
+            if (alreadyOrderTrackingExists != null)
+            {
+                return StatusCodesEnum.DuplicateOrderTracking;
             }
             var orderTracking = await orderTrackingRepository.CreateAsync(
                 mapper.Map<OrderTrackingDto, OrderTracking>(orderTrackingDto));
-            
+            logger.LogInformation("Order tracking created with Id : {0}", orderTracking.OrderTrackingId.ToString());
             return mapper.Map<OrderTracking, OrderTrackingEnrichedDto>(orderTracking,
                 opts =>
                 {
                     opts.Items.Add("CustomerAddress", enrichedData["CustomerAddress"]);
                     opts.Items.Add("OrderItem", enrichedData["OrderItem"]);
+                    opts.Items.Add("Product", enrichedData["Product"]);
                     opts.Items.Add("DeliveryAgent", enrichedData["DeliveryAgent"]);
                     opts.Items.Add("NearestHub", enrichedData["NearestHub"]);
                 });
-            
         }
         catch(Exception ex)
         {
-            return StatusCodesEnum.EnrichedDtoMappingsFailed;
+            logger.LogWarning("Exception while processing order tracking : "+ ex.Message);
+            return StatusCodesEnum.ValidationFailed;
         }
     }
 
@@ -136,10 +155,11 @@ public class OrderTrackingService(
             if (orderTrackingDto.DeliveryAgentId == null && orderTrackingDto.NearestHubId != null)
             {
                 orderTrackingDto.DeliveryAgentId = await AssignAvailableNearestDeliveryAgent(
-                    orderTrackingDto.CustomerAddressId, orderTrackingDto.NearestHubId ?? 0, orderTrackingDto.OrderTrackingType);
+                    orderTrackingDto.NearestHubId ?? 0);
             }
-            var enrichedData = await FetchEnrichedDtoRequiredFields(
+            var enrichedData = await FetchEnrichmentFields(
                 orderTrackingDto.OrderItemId,
+                orderTrackingDto.ProductId,
                 orderTrackingDto.CustomerAddressId,
                 orderTrackingDto.DeliveryAgentId,
                 orderTrackingDto.NearestHubId);
@@ -149,19 +169,23 @@ public class OrderTrackingService(
                 orderTrackingDto.OrderTrackingType,
                 enrichedData["DeliveryAgent"] as DeliveryAgentDto,
                 enrichedData["NearestHub"] as DeliveryHubEnrichedDto);
+            if (orderTrackingDto.OrderTrackingStatusId is (int) OrderTrackingStatusEnum.Delivered or 
+                (int) OrderTrackingStatusEnum.Delivered) // delivered successfully or pickup successfully
+            {
+                orderTrackingDto.ActualDeliveryTime = DateTime.Now;
+            }
             var orderTracking = await orderTrackingRepository.UpdateAsync(
                 mapper.Map<OrderTrackingDto, OrderTracking>(orderTrackingDto));
-
             if (orderTracking == null)
             {
                 return StatusCodesEnum.FailedToUpdateOrderTracking;
             }
-            
             return mapper.Map<OrderTracking, OrderTrackingEnrichedDto>(orderTracking,
                 opts =>
                 {
                     opts.Items.Add("CustomerAddress", enrichedData["CustomerAddress"]);
                     opts.Items.Add("OrderItem", enrichedData["OrderItem"]);
+                    opts.Items.Add("Product", enrichedData["Product"]);
                     opts.Items.Add("DeliveryAgent", enrichedData["DeliveryAgent"]);
                     opts.Items.Add("NearestHub", enrichedData["NearestHub"]);
                 });
@@ -172,15 +196,17 @@ public class OrderTrackingService(
         }
     }
 
-    private async Task<Dictionary<string, object>> FetchEnrichedDtoRequiredFields(
-        int orderItemId, int addressId, int? deliveryAgentId, int? deliveryHubId)
+    private async Task<Dictionary<string, object>> FetchEnrichmentFields(
+        int orderItemId, int productId, int addressId, int? deliveryAgentId, int? deliveryHubId)
     {
         var dictionary = new Dictionary<string, object>();
         try
         {
-            var productResult = await productService.GetProductById(orderItemId);
+            var orderItemResult = await orderService.GetOrderItemByOrderItemId(orderItemId);
+            var productResult = await productService.GetProductById(productId);
             var addressResult = await customerService.GetAddressById(addressId);
-            dictionary.Add("OrderItem", productResult);
+            dictionary.Add("OrderItem", orderItemResult);
+            dictionary.Add("Product", productResult);
             dictionary.Add("CustomerAddress", addressResult);
         }
         catch (Exception ex)
@@ -189,22 +215,49 @@ public class OrderTrackingService(
             throw;
         }
         dictionary.Add("DeliveryAgent",
-            deliveryAgentId == null ? null : await deliveryAgentRepository.GetByIdAsync(deliveryAgentId ?? 0));
+            deliveryAgentId == null ? null : await deliveryAgentService.GetAgentByIdAsync(deliveryAgentId ?? 0));
         dictionary.Add("NearestHub", 
-            deliveryHubId == null ? null : await deliveryHubRepository.GetByIdAsync(deliveryHubId ?? 0));
+            deliveryHubId == null ? null : await deliveryHubService.GetHubByIdAsync(deliveryHubId ?? 0));
         return dictionary;
     }
     
-    private static async Task<int> AssignAvailableNearestDeliveryAgent(int customerAddressId, int nearestHubId, int orderTrackingTypeId)
+    private async Task<int?> AssignAvailableNearestDeliveryAgent(int nearestHubId)
     {
-        throw new NotImplementedException();
+        var deliveryHubResponse = await deliveryHubService.GetHubByIdAsync(nearestHubId);
+        if (deliveryHubResponse is DeliveryHubEnrichedDto dto)
+        {
+            var nearestHubCityName = dto.DeliveryHubAddress?.City;
+            var deliveryAgentFilters = new DeliveryAgentFilters
+            {
+                ServingArea = [nearestHubCityName?.ToUpper() ?? "", nearestHubCityName?.ToLower() ?? ""],
+                Availability = [1,2]
+            };
+            var deliveryAgents = await deliveryAgentService.GetAllAgentsAsync(deliveryAgentFilters);
+            var id = deliveryAgents.ToList().FirstOrDefault(d => 
+                d.AvailabilityStatus == 1 && d.ServingArea.Equals(nearestHubCityName)
+                )?.DeliveryAgentId;
+            if (id == null)
+            {
+                return deliveryAgents.ToList().FirstOrDefault(d => 
+                    d.AvailabilityStatus == 2 && d.ServingArea.Equals(nearestHubCityName)
+                    )?.DeliveryAgentId;
+            }
+            return id;
+        }
+        else
+        {
+            return null;
+        }
+
+        return 1;
+        // deliveryAgentRepository.GetAllAsync()
     }
 
     private async Task<DateTime> CalculateEstimatedTime(
         AddressDto? customerAddress, int orderTrackingStatusId, int orderTrackingTypeId, 
         DeliveryAgentDto? deliveryAgent, DeliveryHubEnrichedDto? nearestHub)
     {
-        if (orderTrackingStatusId >= 3 && customerAddress != null && nearestHub?.DeliveryHubAddress != null)
+        if (orderTrackingStatusId >= (int) OrderTrackingStatusEnum.Shipped && customerAddress != null && nearestHub?.DeliveryHubAddress != null)
         {
             var (distanceKm, durationText) =
                 await distanceService.GetDistanceAsync(customerAddress.ToString(),
@@ -234,11 +287,11 @@ public class OrderTrackingService(
         }
         else
         {
-            if (orderTrackingStatusId == 1)
+            if (orderTrackingStatusId == (int) OrderTrackingStatusEnum.OrderPlaced)
             {
                 return DateTime.Now.AddDays(6);
             }
-            if (orderTrackingStatusId == 2)
+            if (orderTrackingStatusId == (int) OrderTrackingStatusEnum.ShipmentInTransit)
             {
                 return DateTime.Now.AddDays(4);
             }
@@ -249,7 +302,8 @@ public class OrderTrackingService(
     private static bool IsOrderTrackingSpecificFieldsUnchanged(OrderTrackingDto orderTrackingDto,
         OrderTracking orderTracking)
     {
-        return orderTrackingDto.OrderItemId == orderTracking.OrderItemId &&
+        return orderTrackingDto.ProductId == orderTracking.ProductId &&
+               orderTrackingDto.OrderItemId == orderTracking.OrderItemId &&
                orderTrackingDto.CustomerAddressId == orderTracking.CustomerAddressId &&
                orderTrackingDto.OrderTrackingStatusId >= orderTracking.OrderTrackingStatusId &&
                orderTrackingDto.OrderTrackingType == orderTracking.OrderTrackingType &&

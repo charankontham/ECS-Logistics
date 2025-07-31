@@ -13,6 +13,10 @@ public class OrderTracking
     [BsonElement("order_item_id")]
     public required int OrderItemId { get; set; }
     
+    [BsonRequired]
+    [BsonElement("product_id")]
+    public required int ProductId { get; set; }
+    
     [BsonElement("delivery_agent_id")]
     public int? DeliveryAgentId { get; set; }
     

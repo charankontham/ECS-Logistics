@@ -1,6 +1,7 @@
 using System.Transactions;
 using AutoMapper;
 using ECS_Logistics.Data;
+using ECS_Logistics.DbContexts;
 using ECS_Logistics.DTOs;
 using ECS_Logistics.FeignClients;
 using ECS_Logistics.Filters;
@@ -54,7 +55,7 @@ public class DeliveryHubService(
                 scope.Complete();
                 return enrichedHubDto;
             }
-            catch
+            catch(Exception ex)
             {
                 throw;
             }

@@ -2,7 +2,7 @@ using ECS_Logistics.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace ECS_Logistics.Data;
+namespace ECS_Logistics.DbContexts;
 
 public class MySqlDbContext(DbContextOptions<MySqlDbContext> options) : DbContext(options)
 {
@@ -48,6 +48,8 @@ public class MySqlDbContext(DbContextOptions<MySqlDbContext> options) : DbContex
             entity.Property(e => e.DateAdded)
                 .ValueGeneratedOnAdd()
                 .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Ignore);
+            entity.Property(e => e.OrderItemId).IsRequired();
+            entity.Property(e => e.ProductQuantity).IsRequired();
             entity.Property(e => e.CustomerId).IsRequired();
             entity.Property(e => e.OrderTrackingId).IsRequired();
             entity.Property(e => e.ReturnReasonCategoryId).IsRequired();

@@ -3,6 +3,7 @@ namespace ECS_Logistics.DTOs;
 public class OrderTrackingDto
 {
     public string? OrderTrackingId { get; set; }
+    public int ProductId { get; set; }
     public int OrderItemId { get; set; }
     public int? DeliveryAgentId { get; set; }
     public int? NearestHubId { get; set; }
