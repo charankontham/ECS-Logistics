@@ -15,7 +15,7 @@ public class OrderReturnRepository(MySqlDbContext context) : IOrderReturnReposit
         {
             return await query.ToListAsync();
         }
-        if (filters is { FromDate: not null, ToDate: not null } && filters.FromDate < DateTime.Now)
+        if (filters is { FromDate: not null, ToDate: not null } && filters.FromDate < DateTimeOffset.Now)
         {
             query = query.Where(a => a.DateAdded >= filters.FromDate && a.DateAdded <= filters.ToDate);
         }

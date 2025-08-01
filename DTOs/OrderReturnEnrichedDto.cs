@@ -9,7 +9,7 @@ public class OrderReturnEnrichedDto
     public required OrderTrackingEnrichedDto? OrderTracking { get; set; }
     public required int ReturnReasonCategoryId { get; set; }
     public string? ReturnReason { get; set; }
-    public DateTime DateAdded { get; set; }
-    public DateTime DateModified { get; set; }
+    public DateTimeOffset DateAdded { get; set; }
+    public DateTimeOffset DateModified { get; set; }
     public required int ReturnPaymentSourceId { get; set; }
 }

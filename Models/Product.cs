@@ -41,10 +41,10 @@ public class Product
     public float ProductWeight { get; set; }
 
     [Column("date_added")]
-    public DateTime DateAdded { get; set; }
+    public DateTimeOffset DateAdded { get; set; }
 
     [Column("date_modified")]
-    public DateTime DateModified { get; set; }
+    public DateTimeOffset DateModified { get; set; }
 
     [Column("product_dimensions")]
     public string? ProductDimensions { get; set; }

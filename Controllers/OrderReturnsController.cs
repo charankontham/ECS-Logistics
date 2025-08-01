@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ECS_Logistics.Controllers;
 [Route("api/orderReturns")]
 [ApiController]
-[Authorize(Roles = "ROLE_LOGISTICS_ADMIN")]
+[Authorize(Roles = "ROLE_LOGISTICS_ADMIN, ROLE_CUSTOMER")]
 public class OrderReturnsController(IOrderReturnService orderReturnService) : ControllerBase
 {
     [HttpGet("getAll")]

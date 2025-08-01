@@ -10,4 +10,9 @@ public class OrderService(FeignClient feignClient)
     {
         return await feignClient.GetAsync<OrderItemDto>(ServiceName, $"api/order/getOrderItemByOrderItemId/{orderItemId}");
     }
+    
+    public async Task<OrderItemDto?> GetOrderItemByOrderIdAndProductId(int orderId, int productId)
+    {
+        return await feignClient.GetAsync<OrderItemDto>(ServiceName, $"api/order/getOrderItemByOrderIdAndProductId/{orderId}/{productId}");
+    }
 }

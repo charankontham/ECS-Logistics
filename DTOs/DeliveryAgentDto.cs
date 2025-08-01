@@ -14,6 +14,6 @@ public class DeliveryAgentDto
     public float? Rating { get; set; }
     public int TotalDeliveries { get; set; }
     public required string ServingArea { get; set; }
-    public DateTime? DateAdded { get; set; }
-    public DateTime? DateModified { get; set; }
+    public DateTimeOffset? DateAdded { get; set; }
+    public DateTimeOffset? DateModified { get; set; }
 }

@@ -12,8 +12,8 @@ public class ProductFinalDto
     public string? ProductImage { get; set; }
     public string? ProductColor { get; set; }
     public float? ProductWeight { get; set; }
-    public DateTime? DateAdded { get; set; }
-    public DateTime? DateModified { get; set; }
+    public DateTimeOffset? DateAdded { get; set; }
+    public DateTimeOffset? DateModified { get; set; }
     public string? ProductDimensions { get; set; }
     public string? ProductCondition { get; set; }
 }

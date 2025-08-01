@@ -1,3 +1,4 @@
+using System.Text.Json;
 using ECS_Logistics.DTOs;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -71,6 +72,11 @@ public abstract class HelperFunctions
                     failedResponse.StatusCode = 400;
                     return Task.FromResult<IActionResult>(failedResponse);
                     break;
+                case StatusCodesEnum.EnrichedDtoMappingsFailed:
+                    failedResponse.Value = "Enrichment mappings failed!";
+                    failedResponse.StatusCode = 500;
+                    return Task.FromResult<IActionResult>(failedResponse);
+                    break;
                 default:
                     failedResponse.Value = "Unknown error! check logs";
                     failedResponse.StatusCode = 500;
@@ -104,4 +110,9 @@ public abstract class HelperFunctions
         }
         return new TimeSpan(hours, minutes, 0);
     }
+    
+    public static readonly JsonSerializerOptions CamelCaseOptions = new JsonSerializerOptions
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
 }

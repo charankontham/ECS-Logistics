@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 using ECS_Logistics.Configs;
 using ECS_Logistics.Data;
 using ECS_Logistics.DbContexts;
@@ -24,6 +25,11 @@ builder.Configuration
     .AddUserSecrets<Program>();
 
 builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    });
 builder.Services.AddOpenApi();
 builder.Services.AddLogging(logging => { logging.AddSerilog(new LoggerConfiguration().WriteTo.Console().CreateLogger()); });
 builder.Services.AddDbContext<MySqlDbContext>(options =>
@@ -47,6 +53,7 @@ builder.Services.AddSingleton<ProductService>();
 builder.Services.AddSingleton<InventoryService>();
 builder.Services.AddSingleton<CustomerService>();
 builder.Services.AddSingleton<OrderService>();
+builder.Services.AddSingleton<KafkaProducerService>();
 
 builder.Services.AddSingleton<AddressResolver>();
 builder.Services.AddScoped<OrderTrackingResolver>();

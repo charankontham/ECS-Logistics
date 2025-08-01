@@ -1,14 +1,16 @@
 {
   "version": 2,
-  "dgSpecHash": "ssJFu4A7ydU=",
+  "dgSpecHash": "pXvI8kCqflM=",
   "success": true,
   "projectFilePath": "/Users/charan/Documents/dotnet-apps/ECS-Logistics/ECS-Logistics.csproj",
   "expectedPackageFiles": [
     "/Users/charan/.nuget/packages/automapper/12.0.1/automapper.12.0.1.nupkg.sha512",
     "/Users/charan/.nuget/packages/automapper.extensions.microsoft.dependencyinjection/12.0.1/automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",
     "/Users/charan/.nuget/packages/bcrypt.net-next/4.0.3/bcrypt.net-next.4.0.3.nupkg.sha512",
+    "/Users/charan/.nuget/packages/confluent.kafka/2.11.0/confluent.kafka.2.11.0.nupkg.sha512",
     "/Users/charan/.nuget/packages/dnsclient/1.6.1/dnsclient.1.6.1.nupkg.sha512",
     "/Users/charan/.nuget/packages/humanizer.core/2.14.1/humanizer.core.2.14.1.nupkg.sha512",
+    "/Users/charan/.nuget/packages/librdkafka.redist/2.11.0/librdkafka.redist.2.11.0.nupkg.sha512",
     "/Users/charan/.nuget/packages/microsoft.aspnetcore.authentication.jwtbearer/9.0.7/microsoft.aspnetcore.authentication.jwtbearer.9.0.7.nupkg.sha512",
     "/Users/charan/.nuget/packages/microsoft.aspnetcore.openapi/9.0.5/microsoft.aspnetcore.openapi.9.0.5.nupkg.sha512",
     "/Users/charan/.nuget/packages/microsoft.bcl.asyncinterfaces/6.0.0/microsoft.bcl.asyncinterfaces.6.0.0.nupkg.sha512",

@@ -32,8 +32,8 @@ public class DeliveryHubRepository(MySqlDbContext context, ILogger<DeliveryHubRe
 
     public async Task<DeliveryHub> CreateAsync(DeliveryHub hub)
     {
-        hub.DateAdded = DateTime.UtcNow;
-        hub.DateModified = DateTime.UtcNow;
+        hub.DateAdded = DateTimeOffset.UtcNow;
+        hub.DateModified = DateTimeOffset.UtcNow;
         context.DeliveryHubs.Add(hub);
         await context.SaveChangesAsync();
         return hub;

@@ -19,7 +19,7 @@ public class JwtTokenValidation(ILogger<JwtTokenValidation> logger) : IJwtTokenV
         }
         var jwtToken = handler.ReadJwtToken(token);
         var email = jwtToken.Subject;
-        if (jwtToken.ValidTo < DateTime.UtcNow)
+        if (jwtToken.ValidTo < DateTimeOffset.UtcNow)
         {
             logger.LogWarning("Jwt token expired!");
             return StatusCodesEnum.AuthenticationFailed;
@@ -48,7 +48,7 @@ public class JwtTokenValidation(ILogger<JwtTokenValidation> logger) : IJwtTokenV
                     return StatusCodesEnum.AuthenticationFailed;
                 }
             }
-            else if (customerResponse.StatusCode == HttpStatusCode.NotFound)
+            else if (customerResponse.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.Unauthorized)
             {
                 var adminResponse = await httpClient.GetAsync($"{ServiceUrls.AdminService}/getByUsername/{email}");
                 if (adminResponse.IsSuccessStatusCode)

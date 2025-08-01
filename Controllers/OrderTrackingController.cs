@@ -1,3 +1,4 @@
+using ECS_Logistics.Configs;
 using ECS_Logistics.DTOs;
 using ECS_Logistics.Services;
 using ECS_Logistics.Utils;
@@ -8,7 +9,9 @@ namespace ECS_Logistics.Controllers;
 [Route("api/orderTracking")]
 [ApiController]
 [Authorize(Roles = "ROLE_LOGISTICS_ADMIN,ROLE_CUSTOMER")]
-public class OrderTrackingController(IOrderTrackingService orderTrackingService) : ControllerBase
+public class OrderTrackingController(
+    IOrderTrackingService orderTrackingService, 
+    KafkaProducerService kafkaProducerService) : ControllerBase
 {
     [HttpGet("getAllByAgentId/{agentId:int}")]
     [Authorize(Roles = "ROLE_LOGISTICS_ADMIN")]
@@ -19,7 +22,7 @@ public class OrderTrackingController(IOrderTrackingService orderTrackingService)
     }
     
     [HttpGet("{orderTrackingId}")]
-    [Authorize(Roles = "ROLE_CUSTOMER")]
+    [Authorize(Roles = "ROLE_CUSTOMER, ROLE_LOGISTICS_ADMIN")]
     public async Task<IActionResult> GetById(string orderTrackingId)
     {
         try
@@ -30,12 +33,28 @@ public class OrderTrackingController(IOrderTrackingService orderTrackingService)
         catch (Exception ex)
         {
             Console.WriteLine("Order Tracking Controller : {0}", ex.Message);
-            return NotFound("Delivery tracking not found!");
+            return NotFound("Order tracking not found!");
+        }
+    }
+    
+    [HttpGet("getByOrderIdAndProductId/{orderId:int}/{productId:int}")]
+    [Authorize(Roles = "ROLE_CUSTOMER, ROLE_LOGISTICS_ADMIN")]
+    public async Task<IActionResult> GetByOrderIdAndProductId(int orderId, int productId)
+    {
+        try
+        {
+            var response = await orderTrackingService.GetByOrderIdAndProductIdAsync(orderId, productId);
+            return await HelperFunctions.GetFinalHttpResponse(response);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Order Tracking Controller : {0}", ex.Message);
+            return NotFound("Order tracking not found!");
         }
     }
         
     [HttpPost]
-    [Authorize(Roles = "ROLE_CUSTOMER")]
+    [Authorize(Roles = "ROLE_CUSTOMER, ROLE_LOGISTICS_ADMIN")]
     public async Task<IActionResult> Create([FromBody] OrderTrackingDto orderTrackingDto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -53,6 +72,11 @@ public class OrderTrackingController(IOrderTrackingService orderTrackingService)
     public async Task<IActionResult> Update([FromBody] OrderTrackingDto orderTrackingDto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        return await HelperFunctions.GetFinalHttpResponse(await orderTrackingService.UpdateAsync(orderTrackingDto));
+        var response = await orderTrackingService.UpdateAsync(orderTrackingDto);
+        if (response is OrderTrackingEnrichedDto updatedOrderTracking)
+        {
+            await kafkaProducerService.SendOrderTrackingUpdateAsync(updatedOrderTracking);
+        }
+        return await HelperFunctions.GetFinalHttpResponse(response);
     }
 }

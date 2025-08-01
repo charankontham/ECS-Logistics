@@ -48,11 +48,11 @@ public class OrderReturn
 
     [Required]
     [Column("date_added")]
-    public required DateTime DateAdded { get; set; }
+    public required DateTimeOffset DateAdded { get; set; }
 
     [Required]
     [Column("date_modified")]
-    public required DateTime DateModified { get; set; }
+    public required DateTimeOffset DateModified { get; set; }
 
     [Required]
     [Column("return_payment_source_id")]

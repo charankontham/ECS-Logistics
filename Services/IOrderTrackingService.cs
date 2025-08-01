@@ -8,6 +8,7 @@ public interface IOrderTrackingService
 {
     Task<object> GetAllByAgentIdAsync(int agentId);
     Task<object> GetByIdAsync(string orderTrackingId);
+    Task<object> GetByOrderIdAndProductIdAsync(int orderId, int productId);
     Task<object> CreateAsync(OrderTrackingDto orderTrackingDto);
     Task<object> UpdateAsync(OrderTrackingDto orderTrackingDto);
     
