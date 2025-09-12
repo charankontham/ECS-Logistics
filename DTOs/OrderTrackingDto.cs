@@ -8,8 +8,8 @@ public class OrderTrackingDto
     public int? DeliveryAgentId { get; set; }
     public int? NearestHubId { get; set; }
     public int OrderTrackingStatusId { get; set; }
-    public DateTimeOffset EstimatedDeliveryDate { get; set; }
-    public DateTimeOffset? ActualDeliveryDate { get; set; }
+    public DateTime? EstimatedDeliveryDate { get; set; }
+    public DateTime? ActualDeliveryDate { get; set; }
     public int CustomerAddressId { get; set; }
     public string? CustomerInstructions { get; set; }
     public required int OrderTrackingType { get; set; }

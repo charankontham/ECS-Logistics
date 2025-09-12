@@ -19,7 +19,7 @@ public class JwtTokenValidation(ILogger<JwtTokenValidation> logger) : IJwtTokenV
         }
         var jwtToken = handler.ReadJwtToken(token);
         var email = jwtToken.Subject;
-        if (jwtToken.ValidTo < DateTimeOffset.UtcNow)
+        if (jwtToken.ValidTo < DateTime.UtcNow)
         {
             logger.LogWarning("Jwt token expired!");
             return StatusCodesEnum.AuthenticationFailed;

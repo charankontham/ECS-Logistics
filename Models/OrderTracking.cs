@@ -28,10 +28,10 @@ public class OrderTracking
     public required int OrderTrackingStatusId { get; set; }
 
     [BsonElement("estimated_delivery_date")]
-    public DateTimeOffset? EstimatedDeliveryDate { get; set; }
+    public DateTime? EstimatedDeliveryDate { get; set; }
 
     [BsonElement("actual_delivery_date")]
-    public DateTimeOffset? ActualDeliveryDate { get; set; }
+    public DateTime? ActualDeliveryDate { get; set; }
     
     [BsonRequired]
     [BsonElement("customer_address_id")]

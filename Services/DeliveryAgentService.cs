@@ -55,8 +55,8 @@ public class DeliveryAgentService(IDeliveryAgentRepository repository, IMapper m
             {
                 return StatusCodesEnum.EmailAlreadyExists;
             }
-            agentDto.DateAdded = DateTimeOffset.Now;
-            agentDto.DateModified = DateTimeOffset.Now;
+            agentDto.DateAdded = DateTime.UtcNow.AddTicks(-DateTime.UtcNow.Ticks % TimeSpan.TicksPerSecond);
+            agentDto.DateModified = DateTime.UtcNow.AddTicks(-DateTime.UtcNow.Ticks % TimeSpan.TicksPerSecond);
             var agent = mapper.Map<DeliveryAgent>(agentDto);
             var createdAgent = await repository.CreateAsync(agent);
             return mapper.Map<DeliveryAgentDto>(createdAgent);
@@ -68,7 +68,7 @@ public class DeliveryAgentService(IDeliveryAgentRepository repository, IMapper m
             {
                 return StatusCodesEnum.DeliveryAgentNotFound;
             }
-            agentDto.DateModified = DateTimeOffset.Now;
+            agentDto.DateModified = DateTime.UtcNow.AddTicks(-DateTime.UtcNow.Ticks % TimeSpan.TicksPerSecond);
             var updatedAgent =  await repository.UpdateAsync(mapper.Map<DeliveryAgent>(agentDto));
             return mapper.Map<DeliveryAgentDto>(updatedAgent);
         }

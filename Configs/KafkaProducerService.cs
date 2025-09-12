@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Confluent.Kafka;
 using ECS_Logistics.DTOs;
 using ECS_Logistics.Utils;
@@ -23,9 +24,22 @@ public class KafkaProducerService
         var message = new Message<string, string>
         {
             Key = dto.OrderItem?.OrderItemId.ToString() ?? string.Empty,
-            Value = JsonSerializer.Serialize(dto, HelperFunctions.CamelCaseOptions)
+            Value = JsonSerializer.Serialize(dto, HelperFunctions.JsonSerializerOptions)
         };
 
         await _producer.ProduceAsync("order-tracking-updates", message);
+    }
+}
+
+public class JsonDateTimeConverter : JsonConverter<DateTime>
+{
+    public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        return DateTime.Parse(reader.GetString()!);
+    }
+
+    public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
+    {
+        writer.WriteStringValue(value.ToString("yyyy-MM-dd HH:mm:ss"));
     }
 }

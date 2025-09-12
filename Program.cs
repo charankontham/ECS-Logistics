@@ -49,11 +49,13 @@ builder.Services.AddHttpClient<DistanceService>();
 builder.Services.AddHttpClient<ZipcodeService>();
 
 builder.Services.AddSingleton<FeignClient>();
+builder.Services.AddSingleton<ServiceToServiceAuthorization>();
 builder.Services.AddSingleton<ProductService>();
 builder.Services.AddSingleton<InventoryService>();
 builder.Services.AddSingleton<CustomerService>();
 builder.Services.AddSingleton<OrderService>();
 builder.Services.AddSingleton<KafkaProducerService>();
+builder.Services.AddHostedService<KafkaConsumerService>();
 
 builder.Services.AddSingleton<AddressResolver>();
 builder.Services.AddScoped<OrderTrackingResolver>();

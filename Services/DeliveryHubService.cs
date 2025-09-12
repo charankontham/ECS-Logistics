@@ -48,8 +48,8 @@ public class DeliveryHubService(
             try
             {
                 var hub = mapper.Map<DeliveryHub>(hubDto);
-                hub.DateAdded = DateTimeOffset.Now;
-                hub.DateModified = DateTimeOffset.Now;
+                hub.DateAdded = DateTime.UtcNow.AddTicks(-DateTime.UtcNow.Ticks % TimeSpan.TicksPerSecond);
+                hub.DateModified = DateTime.UtcNow.AddTicks(-DateTime.UtcNow.Ticks % TimeSpan.TicksPerSecond);
                 var createdHub = await repository.CreateAsync(hub);
                 var enrichedHubDto = mapper.Map<DeliveryHubEnrichedDto>(createdHub);
                 scope.Complete();
@@ -73,7 +73,7 @@ public class DeliveryHubService(
             return StatusCodesEnum.AddressNotFound;
         }
         var hub = mapper.Map<DeliveryHub>(hubDto);
-        hub.DateModified = DateTimeOffset.Now;
+        hub.DateModified = DateTime.UtcNow.AddTicks(-DateTime.UtcNow.Ticks % TimeSpan.TicksPerSecond);
         try
         {
             var updatedHub = await repository.UpdateAsync(hub);

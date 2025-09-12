@@ -4,6 +4,7 @@ using ECS_Logistics.Services;
 using ECS_Logistics.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 
 namespace ECS_Logistics.Controllers;
 [Route("api/orderTracking")]
@@ -60,6 +61,10 @@ public class OrderTrackingController(
         if (!ModelState.IsValid) return BadRequest(ModelState);
         var response = await HelperFunctions.GetFinalHttpResponse(
             await orderTrackingService.CreateAsync(orderTrackingDto));
+        if (response is OkObjectResult { Value: OrderTrackingEnrichedDto resultDto })
+        {
+            await kafkaProducerService.SendOrderTrackingUpdateAsync(resultDto);
+        }
         return response is OkObjectResult { Value: OrderTrackingEnrichedDto createdOrderTracking } ? 
             CreatedAtAction(nameof(GetById), new
             {
@@ -73,6 +78,22 @@ public class OrderTrackingController(
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
         var response = await orderTrackingService.UpdateAsync(orderTrackingDto);
+        if (response is OrderTrackingEnrichedDto updatedOrderTracking)
+        {
+            await kafkaProducerService.SendOrderTrackingUpdateAsync(updatedOrderTracking);
+        }
+        return await HelperFunctions.GetFinalHttpResponse(response);
+    }
+    
+    [HttpPatch("updateStatus/{orderTrackingId}")]
+    [Authorize(Roles = "ROLE_LOGISTICS_ADMIN")]
+    public async Task<IActionResult> UpdateStatus(string orderTrackingId,[FromQuery] int statusId)
+    {
+        if (!ObjectId.TryParse(orderTrackingId, out var objectId))
+            return BadRequest("Invalid ObjectId format");
+        if (!Enum.IsDefined(typeof(OrderTrackingStatusEnum), statusId))
+            return BadRequest("Invalid statusId");
+        var response = await orderTrackingService.UpdateStatusAsync(orderTrackingId, statusId);
         if (response is OrderTrackingEnrichedDto updatedOrderTracking)
         {
             await kafkaProducerService.SendOrderTrackingUpdateAsync(updatedOrderTracking);

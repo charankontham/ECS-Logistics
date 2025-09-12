@@ -12,7 +12,7 @@ namespace ECS_Logistics.Services;
 public class OrderTrackingService(
     IOrderTrackingRepository orderTrackingRepository, 
     IMapper mapper,
-    ILogger<OrderReturnService> logger,
+    ILogger<OrderTrackingService> logger,
     OrderService orderService,
     ProductService productService,
     CustomerService customerService,
@@ -202,17 +202,19 @@ public class OrderTrackingService(
                 orderTrackingDto.ProductId,
                 orderTrackingDto.CustomerAddressId,
                 orderTrackingDto.DeliveryAgentId,
-                orderTrackingDto.NearestHubId);
+                orderTrackingDto.NearestHubId
+            );
             orderTrackingDto.EstimatedDeliveryDate = await CalculateEstimatedTime(
                 enrichedData["CustomerAddress"] as AddressDto,
                 orderTrackingDto.OrderTrackingStatusId,
                 orderTrackingDto.OrderTrackingType,
                 enrichedData["DeliveryAgent"] as DeliveryAgentDto,
-                enrichedData["NearestHub"] as DeliveryHubEnrichedDto);
+                enrichedData["NearestHub"] as DeliveryHubEnrichedDto
+            );
             if (orderTrackingDto.OrderTrackingStatusId is (int) OrderTrackingStatusEnum.Delivered or 
                 (int) OrderTrackingStatusEnum.Delivered) // delivered successfully or pickup successfully
             {
-                orderTrackingDto.ActualDeliveryDate = DateTimeOffset.Now;
+                orderTrackingDto.ActualDeliveryDate = DateTime.UtcNow.AddTicks(-DateTime.UtcNow.Ticks % TimeSpan.TicksPerSecond);
             }
             var orderTracking = await orderTrackingRepository.UpdateAsync(
                 mapper.Map<OrderTrackingDto, OrderTracking>(orderTrackingDto));
@@ -221,6 +223,45 @@ public class OrderTrackingService(
                 return StatusCodesEnum.FailedToUpdateOrderTracking;
             }
             return mapper.Map<OrderTracking, OrderTrackingEnrichedDto>(orderTracking,
+                opts =>
+                {
+                    opts.Items.Add("CustomerAddress", enrichedData["CustomerAddress"]);
+                    opts.Items.Add("OrderItem", enrichedData["OrderItem"]);
+                    opts.Items.Add("Product", enrichedData["Product"]);
+                    opts.Items.Add("DeliveryAgent", enrichedData["DeliveryAgent"]);
+                    opts.Items.Add("NearestHub", enrichedData["NearestHub"]);
+                });
+        }
+        catch(Exception ex)
+        {
+            return StatusCodesEnum.EnrichedDtoMappingsFailed;
+        }
+    }
+
+    public async Task<object> UpdateStatusAsync(string orderTrackingId, int statusId)
+    {
+        try
+        {
+            var existingOrderTracking = await orderTrackingRepository.GetByIdAsync(ObjectId.Parse(orderTrackingId));
+            if (existingOrderTracking == null)
+                return StatusCodesEnum.OrderTrackingNotFound;
+            existingOrderTracking.OrderTrackingStatusId = statusId;
+            var updatedOrderTracking = await orderTrackingRepository.UpdateAsync(existingOrderTracking) ??
+                                       existingOrderTracking;
+            var enrichedData = await FetchEnrichmentFields(
+                updatedOrderTracking.OrderItemId,
+                updatedOrderTracking.ProductId,
+                updatedOrderTracking.CustomerAddressId,
+                updatedOrderTracking.DeliveryAgentId,
+                updatedOrderTracking.NearestHubId
+            );
+            // updatedOrderTracking.EstimatedDeliveryDate = await CalculateEstimatedTime(
+            //     enrichedData["CustomerAddress"] as AddressDto,
+            //     statusId,
+            //     existingOrderTracking.OrderTrackingType,
+            //     enrichedData["DeliveryAgent"] as DeliveryAgentDto,
+            //     enrichedData["NearestHub"] as DeliveryHubEnrichedDto);
+            return mapper.Map<OrderTracking, OrderTrackingEnrichedDto>(updatedOrderTracking,
                 opts =>
                 {
                     opts.Items.Add("CustomerAddress", enrichedData["CustomerAddress"]);
@@ -251,7 +292,7 @@ public class OrderTrackingService(
         }
         catch (Exception ex)
         {
-            logger.LogError("OrderItems or Address not mapped : {message}", ex.Message);
+            logger.LogError("OrderItem or Product or Address not mapped : {message}", ex.Message);
             throw;
         }
         dictionary.Add("DeliveryAgent",
@@ -293,7 +334,7 @@ public class OrderTrackingService(
         // deliveryAgentRepository.GetAllAsync()
     }
 
-    private async Task<DateTimeOffset> CalculateEstimatedTime(
+    private async Task<DateTime> CalculateEstimatedTime(
         AddressDto? customerAddress, int orderTrackingStatusId, int orderTrackingTypeId, 
         DeliveryAgentDto? deliveryAgent, DeliveryHubEnrichedDto? nearestHub)
     {
@@ -323,19 +364,20 @@ public class OrderTrackingService(
                 agentDelay = TimeSpan.FromDays(2);
             }
             
-            return DateTimeOffset.Now + bufferTime + estimatedTravelTime + agentDelay;
+            return (DateTime.UtcNow + bufferTime + estimatedTravelTime + agentDelay).
+                AddTicks(-DateTime.UtcNow.Ticks % TimeSpan.TicksPerSecond);
         }
         else
         {
             if (orderTrackingStatusId == (int) OrderTrackingStatusEnum.OrderPlaced)
             {
-                return DateTimeOffset.Now.AddDays(6);
+                return DateTime.UtcNow.AddDays(6).AddTicks(-DateTime.UtcNow.Ticks % TimeSpan.TicksPerSecond);
             }
             if (orderTrackingStatusId == (int) OrderTrackingStatusEnum.ShipmentInTransit)
             {
-                return DateTime.Now.AddDays(4);
+                return DateTime.UtcNow.AddDays(4).AddTicks(-DateTime.UtcNow.Ticks % TimeSpan.TicksPerSecond);
             }
-            return DateTime.Now.AddDays(2);
+            return DateTime.UtcNow.AddDays(2).AddTicks(-DateTime.UtcNow.Ticks % TimeSpan.TicksPerSecond);
         }
     }
 

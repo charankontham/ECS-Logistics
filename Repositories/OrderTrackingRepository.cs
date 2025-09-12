@@ -47,8 +47,8 @@ public class OrderTrackingRepository(
         var result = await _orderTracking.ReplaceOneAsync(
             t => t.OrderTrackingId == orderTracking.OrderTrackingId,
             orderTracking,
-            new ReplaceOptions { IsUpsert = false });
-
+            new ReplaceOptions { IsUpsert = false }
+        );
         return result.ModifiedCount > 0 ? orderTracking : null;
     }
 }

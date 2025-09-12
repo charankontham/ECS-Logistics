@@ -1,5 +1,10 @@
 To run the dotnet project please use below commands in your ide or terminal
 
+dotnet run
+
+Note: I used dotnet user-secrets to store the sensitive information in my local machine 
+(user-secrets is a file stored in local disk but in this project directory)
+
 Bugs:
 1. In Jwt token validation we are simply checking the signature, subject, expiration, 
 but not user credentials (In Spring boot we are doing something that I want to replicate in the dotnet too)
@@ -29,7 +34,6 @@ completed the concrete estimation of time for delivery or return pickup
 I didn't registered the services, repositories of order returns and order tracking.
 Need to work on AssignNearestDeliveryAgent method
 Need to test the google matrix api
-OrderTrackingResolver need to implement
 
 
 

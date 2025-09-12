@@ -51,9 +51,9 @@ public class DeliveryAgent
 
     [Required]
     [Column("date_added")]
-    public required DateTimeOffset DateAdded { get; set; }
+    public required DateTime DateAdded { get; set; }
 
     [Required]
     [Column("date_modified")]
-    public required DateTimeOffset DateModified { get; set; }
+    public required DateTime DateModified { get; set; }
 }

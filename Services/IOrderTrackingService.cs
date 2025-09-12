@@ -11,5 +11,6 @@ public interface IOrderTrackingService
     Task<object> GetByOrderIdAndProductIdAsync(int orderId, int productId);
     Task<object> CreateAsync(OrderTrackingDto orderTrackingDto);
     Task<object> UpdateAsync(OrderTrackingDto orderTrackingDto);
+    Task<object> UpdateStatusAsync(string orderTrackingId, int statusId);
     
 }

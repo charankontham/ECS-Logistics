@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ECS-Logistics")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f3f3927ca7f4e20dbc5b3ecf61eb69e32e68e2d2")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d3b4759c847091745dd7bc1801d8859c41dc5b88")]
 [assembly: System.Reflection.AssemblyProductAttribute("ECS-Logistics")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ECS-Logistics")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
