@@ -19,6 +19,23 @@ public class DeliveryHubsController(IDeliveryHubService service) : ControllerBas
         return await HelperFunctions.GetFinalHttpResponse(hubs);
     }
     
+    [HttpGet("getAllByPagination")]
+    public async Task<IActionResult> GetAllByPagination(
+        [FromQuery(Name = "currentPage")] int currentPage,
+        [FromQuery(Name = "offset")] int offset,
+        [FromQuery(Name = "deliveryHubName")] string? deliveryHubName,
+        [FromQuery(Name = "city")] string? city
+        )
+    {
+        var filters = deliveryHubName is {Length: > 0} || city is {Length: > 0 } ? new DeliveryHubFilters()
+        {
+            DeliveryHubName = deliveryHubName,
+            Address = city
+        } : null;
+        var hubs = await service.GetAllByPaginationAsync(currentPage, offset, filters);
+        return await HelperFunctions.GetFinalHttpResponse(hubs);
+    }
+    
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id)
     {

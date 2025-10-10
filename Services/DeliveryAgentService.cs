@@ -17,7 +17,19 @@ public class DeliveryAgentService(IDeliveryAgentRepository repository, IMapper m
             return mapper.Map<IEnumerable<DeliveryAgentDto>>(agents);
         }
 
-        public async Task<object> GetAgentByIdAsync(int id)
+    public async Task<PagedResult<DeliveryAgentDto>> GetAllByPaginationAsync(int currentPage, int offset, DeliveryAgentFilters? filters)
+    {
+        var pagedAgents = await repository.GetAllByPaginationAsync(currentPage, offset, filters);
+        return new PagedResult<DeliveryAgentDto>
+        {
+            Items = mapper.Map<List<DeliveryAgentDto>>(pagedAgents.Items),
+            TotalCount = pagedAgents.TotalCount,
+            CurrentPage = pagedAgents.CurrentPage,
+            Offset = pagedAgents.Offset
+        };
+    }
+
+    public async Task<object> GetAgentByIdAsync(int id)
         {
             var agent = await repository.GetByIdAsync(id);
             if (agent == null) return StatusCodesEnum.DeliveryAgentNotFound;

@@ -7,6 +7,7 @@ namespace ECS_Logistics.Services;
 public interface IDeliveryHubService
 {
     Task<IEnumerable<DeliveryHubEnrichedDto>> GetAllHubsAsync(DeliveryHubFilters? filters);
+    Task<PagedResult<DeliveryHubEnrichedDto>> GetAllByPaginationAsync(int currentPage, int offset, DeliveryHubFilters? filters);
     Task<object> GetHubByIdAsync(int id);
     Task<object> CreateHubAsync(DeliveryHubDto hubDto);
     Task<object> UpdateHubAsync(DeliveryHubDto hubDto);

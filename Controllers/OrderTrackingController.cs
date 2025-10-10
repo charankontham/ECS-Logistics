@@ -1,10 +1,12 @@
 using ECS_Logistics.Configs;
 using ECS_Logistics.DTOs;
+using ECS_Logistics.Filters;
 using ECS_Logistics.Services;
 using ECS_Logistics.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
+using static System.Console;
 
 namespace ECS_Logistics.Controllers;
 [Route("api/orderTracking")]
@@ -12,14 +14,45 @@ namespace ECS_Logistics.Controllers;
 [Authorize(Roles = "ROLE_LOGISTICS_ADMIN,ROLE_CUSTOMER")]
 public class OrderTrackingController(
     IOrderTrackingService orderTrackingService, 
-    KafkaProducerService kafkaProducerService) : ControllerBase
-{
+    KafkaProducerService kafkaProducerService) : ControllerBase {
+    
     [HttpGet("getAllByAgentId/{agentId:int}")]
     [Authorize(Roles = "ROLE_LOGISTICS_ADMIN")]
-    public async Task<IActionResult> GetAll(int agentId)
+    public async Task<IActionResult> GetAllByAgentId(int agentId)
     {
         var ordersTracking = await orderTrackingService.GetAllByAgentIdAsync(agentId);
         return await HelperFunctions.GetFinalHttpResponse(ordersTracking);
+    }
+    
+    [HttpGet("getAllByPagination")]
+    [Authorize(Roles = "ROLE_LOGISTICS_ADMIN")]
+    public async Task<IActionResult> GetAllByPagination(
+        [FromQuery(Name = "currentPage")] int currentPage,
+        [FromQuery(Name = "offset")] int offset,
+        [FromQuery(Name = "deliveryAgentId")] int? deliveryAgentId,
+        [FromQuery(Name = "estimatedDeliveryDate")] DateTime? estimatedDeliveryDate,
+        [FromQuery(Name = "orderTrackingStatusId")] int? orderTrackingStatusId,
+        [FromQuery(Name = "orderTrackingType")] int? orderTrackingType)
+    {
+        var filters = (deliveryAgentId != null || estimatedDeliveryDate != null || orderTrackingStatusId != null || 
+                       orderTrackingType != null) ?
+            new OrderTrackingFilters()
+            {
+                DeliveryAgentId = deliveryAgentId ?? null,
+                EstimatedDeliveryDate = estimatedDeliveryDate ?? null,
+                OrderTrackingStatusId = orderTrackingStatusId ?? null,
+                OrderTrackingType = orderTrackingType ?? null
+            } : null;
+        try
+        {
+            var ordersTracking = await orderTrackingService.GetAllByPaginationAsync(currentPage, offset, filters);
+            return await HelperFunctions.GetFinalHttpResponse(ordersTracking);
+        }
+        catch (Exception e)
+        {
+            WriteLine("Order tracking error : "+ e.StackTrace);
+            return StatusCode(500);
+        }
     }
     
     [HttpGet("{orderTrackingId}")]
@@ -33,7 +66,7 @@ public class OrderTrackingController(
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Order Tracking Controller : {0}", ex.Message);
+            WriteLine("Order Tracking Controller : {0}", ex.Message);
             return NotFound("Order tracking not found!");
         }
     }
@@ -49,7 +82,7 @@ public class OrderTrackingController(
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Order Tracking Controller : {0}", ex.Message);
+            WriteLine("Order Tracking Controller : {0}", ex.Message);
             return NotFound("Order tracking not found!");
         }
     }

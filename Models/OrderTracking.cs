@@ -28,9 +28,11 @@ public class OrderTracking
     public required int OrderTrackingStatusId { get; set; }
 
     [BsonElement("estimated_delivery_date")]
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
     public DateTime? EstimatedDeliveryDate { get; set; }
 
     [BsonElement("actual_delivery_date")]
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
     public DateTime? ActualDeliveryDate { get; set; }
     
     [BsonRequired]

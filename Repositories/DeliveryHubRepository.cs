@@ -1,5 +1,6 @@
 using ECS_Logistics.Data;
 using ECS_Logistics.DbContexts;
+using ECS_Logistics.DTOs;
 using ECS_Logistics.Filters;
 using ECS_Logistics.Models;
 using ECS_Logistics.Utils;
@@ -11,18 +12,25 @@ public class DeliveryHubRepository(MySqlDbContext context, ILogger<DeliveryHubRe
 {
     public async Task<IEnumerable<DeliveryHub>> GetAllAsync(DeliveryHubFilters? filters)
     {
-        var query = context.DeliveryHubs.AsQueryable();
-        if (filters == null)
-        {
-            return await query.ToListAsync();
-        }
-        if (filters.DeliveryHubName != null && filters.DeliveryHubName.Trim() != "")
-        {
-            query = query.Where(a =>
-                a.DeliveryHubName.Contains(filters.DeliveryHubName, StringComparison.CurrentCultureIgnoreCase));
-        }
-        /* Applied all possible filters before retrieving from database to reduce the load */
+        var query = await GetDeliveryHubQuery(filters);
         return await query.ToListAsync();
+    }
+
+    public async Task<PagedResult<DeliveryHub>> GetAllByPaginationAsync(int currentPage, int offset, DeliveryHubFilters? filters)
+    {
+        var query = await GetDeliveryHubQuery(filters);
+        var totalCount = await query.CountAsync();
+        var items = await query.OrderByDescending(dh => dh.DeliveryHubAddressId)
+            .Skip(currentPage * offset)
+            .Take(offset)
+            .ToListAsync();
+        return new PagedResult<DeliveryHub>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            CurrentPage = currentPage,
+            Offset = offset
+        };
     }
 
     public async Task<DeliveryHub?> GetByIdAsync(int id)
@@ -64,5 +72,21 @@ public class DeliveryHubRepository(MySqlDbContext context, ILogger<DeliveryHubRe
         context.DeliveryHubs.Remove(hub);
         await context.SaveChangesAsync();
         return true;
+    }
+
+    private async Task<IQueryable<DeliveryHub>> GetDeliveryHubQuery(DeliveryHubFilters? filters)
+    {
+        var query = context.DeliveryHubs.AsQueryable();
+        if (filters == null)
+        {
+            return query;
+        }
+        if (filters.DeliveryHubName != null && filters.DeliveryHubName.Trim() != "")
+        {
+            query = query.Where(a =>
+                a.DeliveryHubName.Contains(filters.DeliveryHubName, StringComparison.CurrentCultureIgnoreCase));
+        }
+        /* Applied all possible filters before retrieving from database to reduce the load */
+        return query;
     }
 }

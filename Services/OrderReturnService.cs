@@ -23,10 +23,24 @@ public class OrderReturnService(
         return mapper.Map<IEnumerable<OrderReturnEnrichedDto>>(orderReturns);
     }
 
+    public async Task<PagedResult<OrderReturnEnrichedDto>> GetAllByPaginationAsync(int currentPage, int offset,
+        OrderReturnFilters? filters)
+    {
+        var orderReturns = await orderReturnRepository.GetAllByPaginationAsync(currentPage, offset, filters);
+        var enrichedItems = mapper.Map<List<OrderReturnEnrichedDto>>(orderReturns.Items);
+        return new PagedResult<OrderReturnEnrichedDto>
+        {
+            Items = enrichedItems,
+            TotalCount = orderReturns.TotalCount,
+            CurrentPage = orderReturns.CurrentPage,
+            Offset = orderReturns.Offset
+        };
+    }
+
     public async Task<object> GetOrderReturnByIdAsync(int id)
     {
         var orderReturn = await orderReturnRepository.GetByIdAsync(id);
-        return orderReturn != null ? orderReturn : StatusCodesEnum.OrderReturnNotFound;
+        return orderReturn != null ? mapper.Map<OrderReturnEnrichedDto>(orderReturn) : StatusCodesEnum.OrderReturnNotFound;
     }
 
     public async Task<object> GetAllByCustomerIdAsync(int customerId)

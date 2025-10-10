@@ -17,6 +17,31 @@ public class DeliveryAgentsController(IDeliveryAgentService service) : Controlle
             var agents = await service.GetAllAgentsAsync(filters);
             return await HelperFunctions.GetFinalHttpResponse(agents);
         }
+        
+        [HttpGet("getAllByPagination")]
+        public async Task<IActionResult> GetAllByPagination(
+            [FromQuery(Name = "currentPage")] int currentPage, 
+            [FromQuery(Name = "offset")] int offset, 
+            [FromQuery(Name = "servingArea")] string? servingArea,
+            [FromQuery(Name = "availabilityStatus")] string? availabilityStatus,
+            [FromQuery(Name = "agentName")] string? agentName,
+            [FromQuery(Name = "agentRating")] float? rating)
+        {
+            var filters = ((servingArea is { Length: > 0 } && servingArea.Split(",").Length > 0) ||
+                           availabilityStatus is { Length: > 0 } && availabilityStatus.Split(",").Length > 0 ||
+                           agentName is { Length: > 0 })
+                ? new DeliveryAgentFilters()
+                {
+                    ServingArea = servingArea is {Length: > 0} ? servingArea.Split(",").ToList() : null,
+                    Availability = availabilityStatus is { Length: > 0 } ? 
+                        availabilityStatus.Split(",").Select(item => int.Parse(item.Trim())).ToList() : null,
+                    DeliveryAgentName = agentName is { Length: > 0 } ? agentName : null,
+                    Rating = rating,
+                }
+                : null;
+            var agents = await service.GetAllByPaginationAsync(currentPage, offset, filters);
+            return await HelperFunctions.GetFinalHttpResponse(agents);
+        }
     
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)

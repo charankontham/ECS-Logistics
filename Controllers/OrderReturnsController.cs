@@ -18,6 +18,36 @@ public class OrderReturnsController(IOrderReturnService orderReturnService) : Co
         return await HelperFunctions.GetFinalHttpResponse(orderReturns);
     }
     
+    [HttpGet("getAllByPagination")]
+    public async Task<IActionResult> GetAllByPaginationAsync(
+        [FromQuery(Name = "currentPage")] int currentPage, 
+        [FromQuery(Name = "offset")] int offset, 
+        [FromQuery(Name = "fromDate")] DateTime? fromDate,
+        [FromQuery(Name = "toDate")] DateTime? toDate, 
+        [FromQuery(Name = "productId")] int? productId, 
+        [FromQuery(Name = "categoryId")] int? categoryId,
+        [FromQuery(Name = "subCategoryId")] int? subCategoryId,
+        [FromQuery(Name = "brandId")] int? brandId,
+        [FromQuery(Name = "returnReasonCategoryId")] int? returnReasonCategoryId)
+    {
+        var filters = (fromDate != null || toDate != null || productId != null || categoryId != null ||
+                       subCategoryId != null || brandId != null || returnReasonCategoryId != null)
+            ? new OrderReturnFilters
+            {
+                FromDate = fromDate,
+                ToDate = toDate,
+                ProductId = productId,
+                CategoryId = categoryId,
+                SubCategoryId = subCategoryId,
+                BrandId = brandId,
+                ReturnReasonCategoryId = returnReasonCategoryId
+            }
+            : null;
+        var orderReturns = await orderReturnService.GetAllByPaginationAsync(currentPage, offset, filters);
+        return await HelperFunctions.GetFinalHttpResponse(orderReturns);
+        
+    }
+    
     [HttpGet("getAllOrderReturnsByCustomerId/{agentId:int}")]
     public async Task<IActionResult> GetAll(int customerId)
     {

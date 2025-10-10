@@ -1,3 +1,4 @@
+using ECS_Logistics.DTOs;
 using ECS_Logistics.Filters;
 using ECS_Logistics.Models;
 
@@ -6,6 +7,7 @@ namespace ECS_Logistics.Repositories;
 public interface IDeliveryAgentRepository
 {
     Task<IEnumerable<DeliveryAgent>> GetAllAsync(DeliveryAgentFilters? filters);
+    Task<PagedResult<DeliveryAgent>> GetAllByPaginationAsync(int currentPage, int offset, DeliveryAgentFilters? filters);
     Task<DeliveryAgent?> GetByIdAsync(int id);
     Task<DeliveryAgent?> GetByEmailAsync(string id);
     Task<DeliveryAgent> CreateAsync(DeliveryAgent agent);

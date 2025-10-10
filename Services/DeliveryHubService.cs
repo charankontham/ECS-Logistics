@@ -29,6 +29,18 @@ public class DeliveryHubService(
         return mapper.Map<IEnumerable<DeliveryHubEnrichedDto>>(hubs);
     }
 
+    public async Task<PagedResult<DeliveryHubEnrichedDto>> GetAllByPaginationAsync(int currentPage, int offset, DeliveryHubFilters? filters)
+    {
+        var pagedItems = await repository.GetAllByPaginationAsync(currentPage, offset, filters);
+        return new PagedResult<DeliveryHubEnrichedDto>
+        {
+            Items = mapper.Map<List<DeliveryHubEnrichedDto>>(pagedItems.Items),
+            TotalCount = pagedItems.TotalCount,
+            CurrentPage = pagedItems.CurrentPage,
+            Offset = pagedItems.Offset,
+        };
+    }
+
     public async Task<object> GetHubByIdAsync(int id)
     {
         var hub = await repository.GetByIdAsync(id);

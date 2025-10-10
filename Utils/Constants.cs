@@ -29,7 +29,7 @@ public enum OrderTrackingStatusEnum
     OutForDelivery = 5,
     Delivered = 6,
     ReturnedToDeliveryHub = 7,
-    Cancelled = 7,
+    Cancelled = 8,
 }
 
 public static class ServiceUrls

@@ -54,6 +54,56 @@ public class OrderTrackingService(
         return finalResults.AsEnumerable();
     }
 
+    public async Task<object> GetAllByPaginationAsync(int currentPage, int offset, OrderTrackingFilters? filters)
+    {
+        try
+        {
+            PagedResult<OrderTracking> results =
+                await orderTrackingRepository.GetAllByPagination(currentPage, offset, filters);
+            List<OrderTrackingEnrichedDto> finalResults = [];
+            var ordersTracking = results.Items.ToArray() ?? [];
+            foreach (var orderTracking in ordersTracking)
+            {
+                try
+                {
+                    var enrichedData = await FetchEnrichmentFields(
+                        orderTracking.OrderItemId,
+                        orderTracking.ProductId,
+                        orderTracking.CustomerAddressId,
+                        orderTracking.DeliveryAgentId,
+                        orderTracking.NearestHubId);
+                    var enrichedTrackingDto = mapper.Map<OrderTracking, OrderTrackingEnrichedDto>(orderTracking,
+                        opts =>
+                        {
+                            opts.Items.Add("CustomerAddress", enrichedData["CustomerAddress"]);
+                            opts.Items.Add("OrderItem", enrichedData["OrderItem"]);
+                            opts.Items.Add("Product", enrichedData["Product"]);
+                            opts.Items.Add("DeliveryAgent", enrichedData["DeliveryAgent"]);
+                            opts.Items.Add("NearestHub", enrichedData["NearestHub"]);
+                        });
+                    finalResults.Add(enrichedTrackingDto);
+                }
+                catch (Exception ex)
+                {
+                    return StatusCodesEnum.EnrichedDtoMappingsFailed;
+                }
+            }
+
+            return new PagedResult<OrderTrackingEnrichedDto>()
+            {
+                Items = finalResults.ToList(),
+                TotalCount = results.TotalCount,
+                CurrentPage = results.CurrentPage,
+                Offset = results.Offset,
+            };
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex.Message, "Order tracking error");
+            throw ex;
+        }
+    }
+
     public async Task<object> GetByIdAsync(string orderTrackingId)
     {
         try
