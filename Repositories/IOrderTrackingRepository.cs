@@ -13,4 +13,5 @@ public interface IOrderTrackingRepository
     Task<IEnumerable<OrderTracking>> GetAllByOrderItemIdAsync(int orderItemId);
     Task<OrderTracking> CreateAsync(OrderTracking orderTracking);
     Task<OrderTracking?> UpdateAsync(OrderTracking orderTracking);
+    Task<Boolean> DeleteAsync(ObjectId orderTrackingId);
 }

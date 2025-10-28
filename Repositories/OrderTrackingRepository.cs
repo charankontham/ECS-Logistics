@@ -46,15 +46,21 @@ public class OrderTrackingRepository(
                 var filtersList = new List<FilterDefinition<OrderTracking>>();
 
                 if (filters.EstimatedDeliveryDate is not null)
-                    filtersList.Add(filterBuilder.Eq(ot => ot.EstimatedDeliveryDate,
-                        filters.EstimatedDeliveryDate.Value));
+                {
+                    var startOfDay = filters.EstimatedDeliveryDate.Value.Date;
+                    var endOfDay = startOfDay.AddDays(1).AddTicks(-1);
+                    filtersList.Add(filterBuilder.And(
+                        filterBuilder.Gte(ot => ot.EstimatedDeliveryDate, startOfDay),
+                        filterBuilder.Lt(ot => ot.EstimatedDeliveryDate, endOfDay)
+                    ));
+                }
 
                 if (filters.OrderTrackingStatusId is not null)
                     filtersList.Add(filterBuilder.Eq(ot => ot.OrderTrackingStatusId,
                         filters.OrderTrackingStatusId.Value));
 
-                if (filters.DeliveryAgentId is not null)
-                    filtersList.Add(filterBuilder.Eq(ot => ot.DeliveryAgentId, filters.DeliveryAgentId.Value));
+                if (filters.DeliveryAgents is { Length: > 0})
+                    filtersList.Add(filterBuilder.In(ot => ot.DeliveryAgentId!.Value, filters.DeliveryAgents));
 
                 if (filters.OrderTrackingType is not null)
                     filtersList.Add(filterBuilder.Eq(ot => ot.OrderTrackingType, filters.OrderTrackingType));
@@ -65,7 +71,7 @@ public class OrderTrackingRepository(
 
             var totalCount = await _orderTracking.CountDocumentsAsync(filter);
             IEnumerable<OrderTracking> otItems = await _orderTracking.Find(filter)
-                .SortBy(ot => ot.OrderTrackingId)
+                .SortByDescending(ot => ot.OrderTrackingId)
                 .Skip(currentPage * offset)
                 .Limit(offset)
                 .ToListAsync();
@@ -103,5 +109,11 @@ public class OrderTrackingRepository(
             new ReplaceOptions { IsUpsert = false }
         );
         return result.ModifiedCount > 0 ? orderTracking : null;
+    }
+
+    public async Task<bool> DeleteAsync(ObjectId orderTrackingId)
+    {
+        var result = await _orderTracking.DeleteOneAsync(t => t.OrderTrackingId == orderTrackingId);
+        return result.DeletedCount == 1;
     }
 }

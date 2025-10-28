@@ -1,3 +1,4 @@
+using ECS_Logistics.Configs;
 using ECS_Logistics.DTOs;
 using ECS_Logistics.Filters;
 using ECS_Logistics.Services;
@@ -9,7 +10,9 @@ namespace ECS_Logistics.Controllers;
 [Route("api/orderReturns")]
 [ApiController]
 [Authorize(Roles = "ROLE_LOGISTICS_ADMIN, ROLE_CUSTOMER")]
-public class OrderReturnsController(IOrderReturnService orderReturnService) : ControllerBase
+public class OrderReturnsController(
+    IOrderReturnService orderReturnService, 
+    KafkaProducerService kafkaProducerService) : ControllerBase
 {
     [HttpGet("getAll")]
     public async Task<IActionResult> GetAllAsync(OrderReturnFilters? orderReturnFilters)
@@ -48,19 +51,19 @@ public class OrderReturnsController(IOrderReturnService orderReturnService) : Co
         
     }
     
-    [HttpGet("getAllOrderReturnsByCustomerId/{agentId:int}")]
+    [HttpGet("getAllOrderReturnsByCustomerId/{customerId:int}")]
     public async Task<IActionResult> GetAll(int customerId)
     {
         var orderReturns = await orderReturnService.GetAllByCustomerIdAsync(customerId);
         return await HelperFunctions.GetFinalHttpResponse(orderReturns);
     }
     
-    [HttpGet("{orderReturnId:int}")]
-    public async Task<IActionResult> GetById(int orderReturnId)
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetById(int id)
     {
         try
         {
-            var response = await orderReturnService.GetOrderReturnByIdAsync(orderReturnId);
+            var response = await orderReturnService.GetOrderReturnByIdAsync(id);
             return await HelperFunctions.GetFinalHttpResponse(response);
         }
         catch (Exception ex)
@@ -75,11 +78,15 @@ public class OrderReturnsController(IOrderReturnService orderReturnService) : Co
         if (!ModelState.IsValid) return BadRequest(ModelState);
         var response = await HelperFunctions.GetFinalHttpResponse(
             await orderReturnService.CreateReturnAsync(orderReturnDto));
-        return response is OkObjectResult { Value: OrderReturnEnrichedDto createdOrderReturn } ? 
-            CreatedAtAction(nameof(GetById), new
+        if (response is OkObjectResult { Value: OrderReturnEnrichedDto createdOrderReturn })
+        {
+            await kafkaProducerService.SendOrderTrackingUpdateAsync(createdOrderReturn.OrderTracking!);
+            return CreatedAtAction(nameof(GetById), new
             {
                 id = createdOrderReturn.OrderReturnId
-            }, createdOrderReturn) : response;
+            }, createdOrderReturn);
+        }
+        return response;
     }
         
     [HttpDelete("{orderReturnId:int}")]

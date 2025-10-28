@@ -85,6 +85,39 @@ public class DeliveryAgentService(IDeliveryAgentRepository repository, IMapper m
             return mapper.Map<DeliveryAgentDto>(updatedAgent);
         }
 
+        public async Task<DeliveryAgentDto> UpdateAgentDeliveries(int agentId)
+        {
+            DeliveryAgent? agent = await repository.GetByIdAsync(agentId);
+            agent!.TotalDeliveries = agent.TotalDeliveries + 1;
+            agent.DateModified = DateTime.UtcNow.AddTicks(-DateTime.UtcNow.Ticks % TimeSpan.TicksPerSecond);
+            agent = await repository.UpdateAsync(agent);
+            return mapper.Map<DeliveryAgentDto>(agent);
+        }
+
+        public async Task<object> UpdateAgentPassword(int agentId, string oldPassword, string newPassword)
+        {
+            if (context.DeliveryAgents.Any(x => x.DeliveryAgentId == agentId))
+            {
+                var agent = await repository.GetByIdAsync(agentId);
+                if (agent != null && !PasswordHasher.VerifyPassword(newPassword, agent.Password) &&
+                    PasswordHasher.VerifyPassword(oldPassword, agent.Password))
+                {
+                    agent.Password = PasswordHasher.HashPassword(newPassword);
+                    agent.DateModified = DateTime.UtcNow.AddTicks(-DateTime.UtcNow.Ticks % TimeSpan.TicksPerSecond);
+                    agent = await repository.UpdateAsync(agent);
+                    return mapper.Map<DeliveryAgentDto>(agent);
+                }
+                else
+                {
+                    return StatusCodesEnum.ValidationFailed;
+                }
+            }
+            else
+            {
+                return StatusCodesEnum.DeliveryAgentNotFound;
+            }
+        }
+
         public async Task<bool> DeleteAgentAsync(int id)
         {
             return await repository.DeleteAsync(id);

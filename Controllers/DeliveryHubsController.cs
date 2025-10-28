@@ -12,7 +12,7 @@ namespace ECS_Logistics.Controllers;
 [Authorize(Roles = "ROLE_LOGISTICS_ADMIN")]
 public class DeliveryHubsController(IDeliveryHubService service) : ControllerBase
 {
-    [HttpGet("getAll")]
+    [HttpGet]
     public async Task<IActionResult> GetAll([FromBody] DeliveryHubFilters? filters)
     {
         var hubs = await service.GetAllHubsAsync(filters);
@@ -24,13 +24,16 @@ public class DeliveryHubsController(IDeliveryHubService service) : ControllerBas
         [FromQuery(Name = "currentPage")] int currentPage,
         [FromQuery(Name = "offset")] int offset,
         [FromQuery(Name = "deliveryHubName")] string? deliveryHubName,
-        [FromQuery(Name = "city")] string? city
+        [FromQuery(Name = "searchValue")] string? searchValue,
+        [FromQuery(Name = "address")] string? address
         )
     {
-        var filters = deliveryHubName is {Length: > 0} || city is {Length: > 0 } ? new DeliveryHubFilters()
+        var filters = deliveryHubName is {Length: > 0} || address is {Length: > 0 } || searchValue is {Length: > 0 } 
+            ? new DeliveryHubFilters()
         {
             DeliveryHubName = deliveryHubName,
-            Address = city
+            SearchValue = searchValue,
+            Address = address
         } : null;
         var hubs = await service.GetAllByPaginationAsync(currentPage, offset, filters);
         return await HelperFunctions.GetFinalHttpResponse(hubs);

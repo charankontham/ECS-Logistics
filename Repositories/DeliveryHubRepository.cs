@@ -1,3 +1,4 @@
+using AutoMapper;
 using ECS_Logistics.Data;
 using ECS_Logistics.DbContexts;
 using ECS_Logistics.DTOs;
@@ -8,7 +9,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ECS_Logistics.Repositories;
 
-public class DeliveryHubRepository(MySqlDbContext context, ILogger<DeliveryHubRepository> logger) : IDeliveryHubRepository
+public class DeliveryHubRepository(MySqlDbContext context, ILogger<DeliveryHubRepository> logger, IMapper mapper)
+    : IDeliveryHubRepository
 {
     public async Task<IEnumerable<DeliveryHub>> GetAllAsync(DeliveryHubFilters? filters)
     {
@@ -16,15 +18,49 @@ public class DeliveryHubRepository(MySqlDbContext context, ILogger<DeliveryHubRe
         return await query.ToListAsync();
     }
 
-    public async Task<PagedResult<DeliveryHub>> GetAllByPaginationAsync(int currentPage, int offset, DeliveryHubFilters? filters)
+    public async Task<PagedResult<DeliveryHubEnrichedDto>> GetAllByPaginationAsync(int currentPage, int offset,
+        DeliveryHubFilters? filters)
     {
         var query = await GetDeliveryHubQuery(filters);
-        var totalCount = await query.CountAsync();
-        var items = await query.OrderByDescending(dh => dh.DeliveryHubAddressId)
+        var results = mapper.Map<List<DeliveryHubEnrichedDto>>(await query.ToListAsync());
+        if (filters != null)
+        {
+            results = results.Where((dh) => ( string.IsNullOrEmpty(filters.SearchValue) ||
+                                          (dh.DeliveryHubAddress != null &&
+                                           (
+                                               (dh.DeliveryHubAddress.City != null &&
+                                                dh.DeliveryHubAddress.City.Contains(filters.SearchValue,
+                                                    StringComparison.CurrentCultureIgnoreCase)
+                                               ) ||
+                                               (dh.DeliveryHubAddress.State != null &&
+                                                dh.DeliveryHubAddress.State.Contains(filters.SearchValue,
+                                                    StringComparison.CurrentCultureIgnoreCase)
+                                               ) ||
+                                               (dh.DeliveryHubAddress.Street != null &&
+                                                dh.DeliveryHubAddress.Street.Contains(filters.SearchValue,
+                                                    StringComparison.CurrentCultureIgnoreCase)
+                                               ) ||
+                                               (dh.DeliveryHubAddress.Country != null &&
+                                                dh.DeliveryHubAddress.Country.Contains(filters.SearchValue,
+                                                    StringComparison.CurrentCultureIgnoreCase)
+                                               ) ||
+                                               (dh.DeliveryHubAddress.Zip != null &&
+                                                dh.DeliveryHubAddress.Zip.Contains(filters.SearchValue,
+                                                    StringComparison.CurrentCultureIgnoreCase)
+                                               )
+                                           )))
+                                          && ( string.IsNullOrEmpty(filters.Address) || dh.DeliveryHubAddress != null &&
+                                              filters.Address.Equals(dh.DeliveryHubAddress.State, 
+                                                  StringComparison.CurrentCultureIgnoreCase) )
+            ).ToList();
+        }
+        var totalCount = results.Count;
+        var items = results.OrderByDescending(dh => dh.DeliveryHubId)
             .Skip(currentPage * offset)
             .Take(offset)
-            .ToListAsync();
-        return new PagedResult<DeliveryHub>
+            .ToList();
+
+        return new PagedResult<DeliveryHubEnrichedDto>
         {
             Items = items,
             TotalCount = totalCount,
@@ -81,11 +117,19 @@ public class DeliveryHubRepository(MySqlDbContext context, ILogger<DeliveryHubRe
         {
             return query;
         }
+
         if (filters.DeliveryHubName != null && filters.DeliveryHubName.Trim() != "")
         {
             query = query.Where(a =>
-                a.DeliveryHubName.Contains(filters.DeliveryHubName, StringComparison.CurrentCultureIgnoreCase));
+                a.DeliveryHubName.ToLower().Contains(filters.DeliveryHubName.ToLower()));
         }
+
+        // if (filters.SearchValue != null && filters.SearchValue.Trim() != "")
+        // {
+        //     query = query.Where((dh) =>
+        //         dh.DeliveryHubName.ToLower().Contains(filters.SearchValue.ToLower()));
+        // }
+
         /* Applied all possible filters before retrieving from database to reduce the load */
         return query;
     }

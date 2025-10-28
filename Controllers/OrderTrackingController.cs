@@ -29,16 +29,16 @@ public class OrderTrackingController(
     public async Task<IActionResult> GetAllByPagination(
         [FromQuery(Name = "currentPage")] int currentPage,
         [FromQuery(Name = "offset")] int offset,
-        [FromQuery(Name = "deliveryAgentId")] int? deliveryAgentId,
+        [FromQuery(Name = "deliveryAgents")] int[] deliveryAgents,
         [FromQuery(Name = "estimatedDeliveryDate")] DateTime? estimatedDeliveryDate,
         [FromQuery(Name = "orderTrackingStatusId")] int? orderTrackingStatusId,
         [FromQuery(Name = "orderTrackingType")] int? orderTrackingType)
     {
-        var filters = (deliveryAgentId != null || estimatedDeliveryDate != null || orderTrackingStatusId != null || 
+        var filters = (deliveryAgents is { Length: > 0 } || estimatedDeliveryDate != null || orderTrackingStatusId != null || 
                        orderTrackingType != null) ?
             new OrderTrackingFilters()
             {
-                DeliveryAgentId = deliveryAgentId ?? null,
+                DeliveryAgents = deliveryAgents is { Length: > 0} ? deliveryAgents : null,
                 EstimatedDeliveryDate = estimatedDeliveryDate ?? null,
                 OrderTrackingStatusId = orderTrackingStatusId ?? null,
                 OrderTrackingType = orderTrackingType ?? null

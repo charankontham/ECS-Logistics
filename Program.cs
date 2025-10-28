@@ -30,6 +30,9 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     });
+builder.Services
+    .AddControllers()
+    .AddNewtonsoftJson();
 builder.Services.AddOpenApi();
 builder.Services.AddLogging(logging => { logging.AddSerilog(new LoggerConfiguration().WriteTo.Console().CreateLogger()); });
 builder.Services.AddDbContext<MySqlDbContext>(options =>

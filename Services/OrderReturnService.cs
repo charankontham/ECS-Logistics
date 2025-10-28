@@ -48,7 +48,7 @@ public class OrderReturnService(
         try
         {
             var orderReturns = await orderReturnRepository.GetAllByCustomerIdAsync(customerId);
-            return mapper.Map<IEnumerable<OrderTrackingEnrichedDto>>(orderReturns);
+            return mapper.Map<IEnumerable<OrderReturnEnrichedDto>>(orderReturns);
         }
         catch (Exception e)
         {
@@ -75,6 +75,7 @@ public class OrderReturnService(
             if (orderTrackingResponse is OrderTrackingEnrichedDto dto)
             {
                 orderTrackingDto.OrderTrackingId = dto.OrderTrackingId;
+                orderReturnDto.OrderTrackingId = orderTrackingDto.OrderTrackingId;
             }
             else if (orderTrackingResponse is StatusCodesEnum statusCode)
             {
@@ -85,6 +86,8 @@ public class OrderReturnService(
             {
                 return StatusCodesEnum.InternalServerError;
             }
+            orderReturnDto.DateAdded = DateTime.UtcNow.AddTicks(-DateTime.UtcNow.Ticks % TimeSpan.TicksPerSecond);
+            orderReturnDto.DateModified = DateTime.UtcNow.AddTicks(-DateTime.UtcNow.Ticks % TimeSpan.TicksPerSecond);
             var contextDictionary = GetContextDictionary(orderItemDto?.ProductId ?? 0,
                 orderTrackingResponse as OrderTrackingEnrichedDto);
             var orderReturn = mapper.Map<OrderReturnDto, OrderReturn>(orderReturnDto, opts =>
@@ -94,15 +97,31 @@ public class OrderReturnService(
                 opts.Items.Add(contextDictionary.ElementAt(2).Key, contextDictionary.ElementAt(2).Value);
                 opts.Items.Add(contextDictionary.ElementAt(3).Key, contextDictionary.ElementAt(3).Value);
             });
-            var createdOrderReturn = await orderReturnRepository.CreateAsync(orderReturn);
-            var finalResult = mapper.Map<OrderReturnEnrichedDto>(createdOrderReturn);
-            scope.Complete();
-            return finalResult;
+            try
+            {
+                orderReturn = await orderReturnRepository.CreateAsync(orderReturn);
+                var finalResult = mapper.Map<OrderReturnEnrichedDto>(orderReturn);
+                scope.Complete();
+                return finalResult;
+            }
+            catch (Exception ex)
+            {
+                if (orderTrackingDto.OrderTrackingId != null)
+                {
+                    await orderTrackingService.DeleteAsync(orderTrackingDto.OrderTrackingId);
+                }
+                logger.LogError(ex.Message);
+                return StatusCodesEnum.ValidationFailed;
+            }
         }
         catch (Exception ex)
         {
             logger.LogError(ex.Message);
             return StatusCodesEnum.ValidationFailed;
+        }
+        finally
+        {
+            scope.Dispose(); // Explicitly dispose scope (optional, as 'using' handles this)
         }
     }
 

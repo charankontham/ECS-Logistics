@@ -6,7 +6,6 @@ namespace ECS_Logistics.DbContexts;
 
 public class MySqlDbContext(DbContextOptions<MySqlDbContext> options) : DbContext(options)
 {
-    public DbSet<Product> Product { get; set; }
     public DbSet<DeliveryAgent> DeliveryAgents { get; set; }
     public DbSet<OrderReturn> OrderReturns { get; set; }
     public DbSet<DeliveryHub> DeliveryHubs { get; set; }
@@ -14,16 +13,6 @@ public class MySqlDbContext(DbContextOptions<MySqlDbContext> options) : DbContex
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        modelBuilder.Entity<Product>(entity =>
-        {
-            entity.ToTable("product");
-            entity.Property(p => p.DateAdded)
-                .ValueGeneratedOnAdd()
-                .Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Ignore);
-            entity.Property(p => p.ProductName).IsRequired();
-            entity.Property(p => p.ProductPrice).IsRequired();
-            entity.Property(p => p.ProductQuantity).IsRequired();
-        });
         
         modelBuilder.Entity<DeliveryAgent>(entity =>
         {

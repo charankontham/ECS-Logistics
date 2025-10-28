@@ -34,7 +34,7 @@ public class DeliveryHubService(
         var pagedItems = await repository.GetAllByPaginationAsync(currentPage, offset, filters);
         return new PagedResult<DeliveryHubEnrichedDto>
         {
-            Items = mapper.Map<List<DeliveryHubEnrichedDto>>(pagedItems.Items),
+            Items = pagedItems.Items,
             TotalCount = pagedItems.TotalCount,
             CurrentPage = pagedItems.CurrentPage,
             Offset = pagedItems.Offset,

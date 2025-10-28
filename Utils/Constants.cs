@@ -28,8 +28,9 @@ public enum OrderTrackingStatusEnum
     WaitingForDeliveryAgent = 4,
     OutForDelivery = 5,
     Delivered = 6,
-    ReturnedToDeliveryHub = 7,
-    Cancelled = 8,
+    Cancelled = 7,
+    Returned = 8,
+    
 }
 
 public static class ServiceUrls

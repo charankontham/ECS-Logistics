@@ -7,4 +7,5 @@ public class OrderItemDto
     public int ProductId { get; set; }
     public int Quantity { get; set; }
     public float ProductPrice { get; set; }
+    public int? InvoiceId { get; set; }
 }

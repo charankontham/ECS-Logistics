@@ -10,5 +10,7 @@ public interface IDeliveryAgentService
     Task<object> GetAgentByIdAsync(int id);
     Task<object> CreateAgentAsync(DeliveryAgentDto agentDto);
     Task<object> UpdateAgentAsync(DeliveryAgentDto agentDto);
+    Task<DeliveryAgentDto> UpdateAgentDeliveries(int agentId);
+    Task<object> UpdateAgentPassword(int agentId, string oldPassword, string newPassword);
     Task<bool> DeleteAgentAsync(int id);
 }

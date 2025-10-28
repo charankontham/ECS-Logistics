@@ -32,7 +32,7 @@ public class OrderReturn
     [Column("category_id")]
     public int? CategoryId { get; set; }
     
-    [Column("subcategory_id")]
+    [Column("sub_category_id")]
     public int? SubCategoryId { get; set; }
     
     [Column("brand_id")]
