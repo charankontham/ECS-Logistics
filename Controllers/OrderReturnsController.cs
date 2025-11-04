@@ -31,10 +31,16 @@ public class OrderReturnsController(
         [FromQuery(Name = "categoryId")] int? categoryId,
         [FromQuery(Name = "subCategoryId")] int? subCategoryId,
         [FromQuery(Name = "brandId")] int? brandId,
+        [FromQuery(Name = "orderStatusId")] int? orderStatusId, 
+        [FromQuery(Name = "deliveryAgentId")] int? deliveryAgentId, 
+        [FromQuery(Name = "deliveryHubId")] int? deliveryHubId,
+        [FromQuery(Name = "searchValue")] string? searchValue,
         [FromQuery(Name = "returnReasonCategoryId")] int? returnReasonCategoryId)
     {
         var filters = (fromDate != null || toDate != null || productId != null || categoryId != null ||
-                       subCategoryId != null || brandId != null || returnReasonCategoryId != null)
+                       subCategoryId != null || brandId != null || returnReasonCategoryId != null ||
+                       orderStatusId != null || deliveryAgentId!=null || deliveryHubId!=null || 
+                       searchValue?.Trim() is {Length: > 0} || returnReasonCategoryId!=null)
             ? new OrderReturnFilters
             {
                 FromDate = fromDate,
@@ -43,6 +49,10 @@ public class OrderReturnsController(
                 CategoryId = categoryId,
                 SubCategoryId = subCategoryId,
                 BrandId = brandId,
+                OrderStatusId = orderStatusId,
+                DeliveryAgentId = deliveryAgentId,
+                DeliveryHubId = deliveryHubId,
+                SearchValue = searchValue?.Trim() is { Length: > 0 } ? searchValue.Trim() : null,
                 ReturnReasonCategoryId = returnReasonCategoryId
             }
             : null;

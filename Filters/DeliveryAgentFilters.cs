@@ -6,4 +6,5 @@ public class DeliveryAgentFilters
     public List<int>? Availability { get; set; }
     public string? DeliveryAgentName { get; set; }
     public float? Rating { get; set; }
+    public string? SearchValue { get; set; }
 }

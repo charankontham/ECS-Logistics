@@ -8,5 +8,9 @@ public class OrderReturnFilters
     public int? CategoryId { get; set; }
     public int? SubCategoryId { get; set; }
     public int? BrandId { get; set; }
+    public int? OrderStatusId { get; set; }
+    public int? DeliveryAgentId { get; set; }
+    public int? DeliveryHubId { get; set; }
+    public string? SearchValue { get; set; }
     public int? ReturnReasonCategoryId { get; set; }
 }

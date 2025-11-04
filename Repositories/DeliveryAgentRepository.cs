@@ -97,10 +97,15 @@ public class DeliveryAgentRepository(MySqlDbContext context) : IDeliveryAgentRep
         {
             query = query.Where(a => a.DeliveryAgentName == filters.DeliveryAgentName);
         }
-
         if (filters.Rating != null)
         {
             query = query.Where(a => Equals(a.Rating, filters.Rating));
+        }
+
+        if (filters.SearchValue != null)
+        {
+            query = query.Where(a => a.DeliveryAgentName.Contains(filters.SearchValue) ||
+                                     a.DeliveryAgentId.ToString().Equals(filters.SearchValue));
         }
         /* Applied all possible filters before retrieving from database to reduce the load */
         return query;

@@ -28,7 +28,6 @@ public class FeignClient(IHttpClientFactory httpClientFactory,
                         client.DefaultRequestHeaders.Add(header.Key, header.Value.ToString());
                     }
                 }
-            
         }
         if (headers == null || string.IsNullOrEmpty(authHeader))
         {

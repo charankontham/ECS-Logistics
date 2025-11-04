@@ -7,7 +7,7 @@ namespace ECS_Logistics.Repositories;
 public interface IOrderReturnRepository
 {
     Task<IEnumerable<OrderReturn>> GetAllAsync(OrderReturnFilters? filters);
-    Task<PagedResult<OrderReturn>> GetAllByPaginationAsync(int currentPage, int offset, OrderReturnFilters? filters);
+    Task<PagedResult<OrderReturnEnrichedDto>> GetAllByPaginationAsync(int currentPage, int offset, OrderReturnFilters? filters);
     Task<OrderReturn?> GetByIdAsync(int id);
     Task<IEnumerable<OrderReturn>> GetAllByCustomerIdAsync(int customerId);
     Task<OrderReturn> CreateAsync(OrderReturn orderReturn);

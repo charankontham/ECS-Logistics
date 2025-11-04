@@ -26,15 +26,7 @@ public class OrderReturnService(
     public async Task<PagedResult<OrderReturnEnrichedDto>> GetAllByPaginationAsync(int currentPage, int offset,
         OrderReturnFilters? filters)
     {
-        var orderReturns = await orderReturnRepository.GetAllByPaginationAsync(currentPage, offset, filters);
-        var enrichedItems = mapper.Map<List<OrderReturnEnrichedDto>>(orderReturns.Items);
-        return new PagedResult<OrderReturnEnrichedDto>
-        {
-            Items = enrichedItems,
-            TotalCount = orderReturns.TotalCount,
-            CurrentPage = orderReturns.CurrentPage,
-            Offset = orderReturns.Offset
-        };
+        return await orderReturnRepository.GetAllByPaginationAsync(currentPage, offset, filters);
     }
 
     public async Task<object> GetOrderReturnByIdAsync(int id)
